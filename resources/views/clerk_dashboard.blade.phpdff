@@ -1,0 +1,271 @@
+<x-app-layout>
+    <div class="min-h-screen bg-white p-4 font-sans text-[#2D5A71]">
+        <div class="max-w-[1400px] mx-auto">
+            
+            {{-- HEADER --}}
+            <div class="bg-white flex justify-between items-center mb-6 px-12 py-6 -mx-4 rounded-b-[2rem] shadow-sm shadow-black/5">
+                <div>
+                    <h1 class="text-3xl font-bold text-[#2D5A71]">Clinical Clerk Dashboard</h1>
+                    <p class="text-[#2D5A71]/60 text-xs font-medium">
+                        {{ \Carbon\Carbon::now('Asia/Manila')->format('l, F d, Y') }}
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <p class="font-bold text-[#2D5A71] border-b-2 border-[#2D5A71] leading-tight">{{ Auth::user()->name }}</p>
+                        <p class="text-[#2D5A71] text-[10px] font-bold uppercase opacity-80">{{ Auth::user()->role }}</p>
+                    </div>
+                    <div class="bg-white/40 p-2 rounded-full shadow-sm">
+                        <i class="fa-solid fa-user text-xl text-[#2D5A71]"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-6">
+                
+                {{-- LEFT SIDEBAR: Calendar & Availability --}}
+                <div class="col-span-3 space-y-4">
+
+                    {{-- Calendar --}}
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <h3 class="text-[10px] font-black text-[#7BA7B4] mb-3 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-days text-sm"></i> Assignment Date
+                        </h3>
+                        <form action="{{ route('clerk.dashboard') }}" method="GET">
+                            <input type="date" name="schedule_date"
+                                   value="{{ request('schedule_date', date('Y-m-d')) }}"
+                                   onchange="this.form.submit()"
+                                   class="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-bold text-[#2D5A71] focus:ring-2 focus:ring-[#B9DEE7] shadow-inner outline-none">
+                        </form>
+                    </div>
+
+                    {{-- Doctor Availability --}}
+                    <div class="bg-[#E1F1F6] p-5 rounded-3xl shadow-sm border border-gray-100 h-[630px] overflow-y-auto custom-scrollbar">
+                        <h3 class="flex items-center gap-2 font-bold text-[#2D5A71] text-sm mb-6 uppercase tracking-wider sticky top-0 bg-[#E1F1F6] py-2 z-10">
+                            <i class="fa-solid fa-user-doctor text-[#7BA7B4]"></i> Availability for {{ \Carbon\Carbon::parse(request('schedule_date', date('Y-m-d')))->format('M d') }}
+                        </h3>
+
+                        <div class="space-y-4">
+                            @foreach($doctors as $doc)
+                                @php
+                                    $selectedDate = request('schedule_date', date('Y-m-d'));
+                                    $isUnavailable = $doc->unavailabilities->where('date', $selectedDate)->first();
+                                @endphp
+                                
+                                <div class="doctor-card flex items-center justify-between bg-white rounded-2xl p-4 transition-all border-2 {{ $isUnavailable ? 'border-red-100 opacity-75' : 'border-white' }} shadow-sm cursor-pointer hover:border-[#8CB1C3]" 
+                                     onclick="filterQueueByDoctor('{{ $doc->name }}', this)">
+                                    <div class="flex items-center gap-3">
+                                        <img src="https://ui-avatars.com/api/?name={{ urlencode($doc->name) }}&background={{ $isUnavailable ? 'FFDEDE' : 'E1F1F6' }}&color={{ $isUnavailable ? 'FF4B4B' : '7BA7B4' }}" 
+                                             class="w-11 h-11 rounded-full border-2">
+                                        <div class="flex-1">
+                                            <p class="doctor-name font-bold text-[13px] leading-tight text-[#2D5A71]">Dr. {{ $doc->name }}</p>
+                                            <p class="text-[9px] font-black uppercase {{ $isUnavailable ? 'text-red-400' : 'text-green-500' }}">
+                                                {{ $isUnavailable ? 'Not Available' : 'Available' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <form action="{{ route('clerk.doctors.toggle-availability', $doc->id) }}" method="POST" onclick="event.stopPropagation();">
+                                        @csrf
+                                        <input type="hidden" name="date" value="{{ $selectedDate }}">
+                                        <button type="submit" class="focus:outline-none hover:opacity-80 transition-all active:scale-90">
+                                            <i class="fa-solid {{ $isUnavailable ? 'fa-toggle-off text-gray-300' : 'fa-toggle-on text-[#7BA7B4]' }} text-2xl"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                {{-- MIDDLE: Stats & Queue --}}
+                <div class="col-span-6">
+
+                    {{-- Stats --}}
+                    <div class="grid grid-cols-4 gap-3 mb-6">
+                        @php
+                            $stats = [
+                                ['label' => 'Total Today', 'value' => $totalToday],
+                                ['label' => 'Pending', 'value' => $pending],
+                                ['label' => 'Checked In', 'value' => $checkedIn],
+                                ['label' => 'Walk-ins', 'value' => $queue->where('is_walk_in', true)->count()],
+                            ];
+                        @endphp
+                        @foreach($stats as $stat)
+                            <div class="bg-[#E1F1F6] py-5 px-2 rounded-2xl text-center shadow-sm border border-[#D1E5E9]/50">
+                                <p class="text-[11px] font-bold text-[#2D5A71] mb-2 uppercase tracking-wide">{{ $stat['label'] }}</p>
+                                <p class="text-3xl font-black text-[#2D5A71]">{{ $stat['value'] }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Queue List --}}
+                    <div class="bg-white p-8 rounded-[2.5rem] border border-gray-100 min-h-[615px] shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                        <div class="flex justify-between items-center mb-8">
+                            <h2 class="text-2xl font-bold text-[#2D5A71] tracking-tight">Today's Queue</h2>
+                            <span id="filter-indicator" class="hidden text-[10px] font-black text-white uppercase tracking-widest bg-[#8CB1C3] px-3 py-1 rounded-full">Filtered View</span>
+                        </div>
+
+                        <div id="queue-list" class="space-y-5">
+                            @forelse($queue as $item)
+                                @php
+                                    $status = strtolower($item->status ?? 'pending');
+                                    $config = match($status) {
+                                        'pending', 'booked' => ['border'=>'border-gray-100', 'num'=>'bg-[#E1F1F6] text-[#2D5A71]', 'next'=>'checked-in', 'btn_text'=>'Check In', 'btn_color'=>'bg-[#98C18E]', 'icon'=>'fa-check'],
+                                        'checked-in' => ['border'=>'border-[#98C18E]', 'num'=>'bg-[#98C18E] text-white', 'next'=>'called', 'btn_text'=>'Start', 'btn_color'=>'bg-orange-400', 'icon'=>'fa-bullhorn'],
+                                        'called' => ['border'=>'border-orange-300', 'num'=>'bg-orange-300 text-white', 'next'=>'in-progress', 'btn_text'=>'In Progress', 'btn_color'=>'bg-[#7BA7B4]', 'icon'=>'fa-spinner fa-spin'],
+                                        'in-progress' => ['border'=>'border-[#7BA7B4]', 'num'=>'bg-[#7BA7B4] text-white', 'next'=>'completed', 'btn_text'=>'Complete', 'btn_color'=>'bg-[#2D5A71]', 'icon'=>'fa-flag-checkered'],
+                                        'completed' => ['border'=>'border-blue-100 opacity-50', 'num'=>'bg-blue-100 text-blue-400', 'next'=>null, 'btn_text'=>'Done', 'btn_color'=>'bg-gray-200', 'icon'=>'fa-check-double'],
+                                        default => ['border'=>'border-gray-100', 'num'=>'bg-[#E1F1F6]', 'next'=>'checked-in', 'btn_text'=>'Check In', 'btn_color'=>'bg-[#98C18E]', 'icon'=>'fa-check'],
+                                    };
+                                @endphp
+                                
+                                <div class="queue-item flex items-center justify-between p-1 bg-white rounded-2xl border-2 {{ $config['border'] }} shadow-sm transition-all duration-300"
+                                     data-doctor-name="{{ $item->doctor->name ?? $item->doctor_name }}">
+                                    <div class="flex items-center gap-6">
+                                        <div class="w-16 h-16 {{ $config['num'] }} rounded-xl flex items-center justify-center font-black text-2xl shadow-inner">
+                                            {{ $item->queue_number }}
+                                        </div>
+                                        <div>
+                                            <p class="text-lg font-bold text-[#2D5A71] capitalize">{{ $item->patient_name ?? 'Guest Patient' }}</p>
+                                            <p class="text-[11px] text-gray-400 font-bold uppercase tracking-tight">
+                                                {{ $item->appointment_time }} • <span class="text-[#8CB1C3]">Dr. {{ $item->doctor->name ?? $item->doctor_name }}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="pr-6">
+                                        @if($config['next'])
+                                            <form action="{{ route('clerk.appointments.update-status', $item->id) }}" method="POST">
+                                                @csrf @method('PATCH')
+                                                <input type="hidden" name="status" value="{{ $config['next'] }}">
+                                                <button type="submit" class="flex items-center gap-2 px-5 py-2.5 {{ $config['btn_color'] }} text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:scale-105 active:scale-95 transition-all">
+                                                    <i class="fa-solid {{ $config['icon'] }}"></i> {{ $config['btn_text'] }}
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="px-5 py-2.5 bg-gray-100 text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest">Finished</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200 text-gray-400 italic">
+                                    No patients in queue.
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+
+                {{-- RIGHT: Walk-in Registration --}}
+                <div class="col-span-3">
+                    <div class="bg-white p-7 rounded-3xl shadow-xl border border-gray-100">
+                        <h3 class="font-bold text-[#2D5A71] mb-1">Walk-in Registration</h3>
+                        <p class="text-[11px] text-[#7BA7B4] font-bold mb-6 uppercase tracking-widest">Next Queue: #{{ $totalToday + 1 }}</p>
+
+                        <form action="{{ route('clerk.appointments.walkin') }}" method="POST" class="space-y-4">
+                            @csrf
+
+                            {{-- Patient Type Toggle --}}
+                            <div class="grid grid-cols-2 gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100 mb-5">
+                                <input type="radio" id="type_regular" name="patient_type" value="regular" checked class="hidden peer/regular">
+                                <label for="type_regular" class="flex items-center justify-center p-3 rounded-xl cursor-pointer bg-white peer-checked/regular:bg-[#8CB1C3] peer-checked/regular:text-white text-[#2D5A71] text-[10px] font-black uppercase shadow-sm transition-all">Regular Patient</label>
+
+                                <input type="radio" id="type_new" name="patient_type" value="new" class="hidden peer/new">
+                                <label for="type_new" class="flex items-center justify-center p-3 rounded-xl cursor-pointer bg-white peer-checked/new:bg-[#8CB1C3] peer-checked/new:text-white text-[#2D5A71] text-[10px] font-black uppercase shadow-sm transition-all">New Patient</label>
+                            </div>
+
+                            {{-- Regular Patient Search --}}
+                            <div id="regular_patient_section" class="space-y-1">
+                                <label class="text-[10px] font-black text-[#2D5A71]/60 uppercase tracking-widest ml-1">Search Patient:</label>
+                                <input type="text" name="regular_patient_name" placeholder="Search by Name or Phone" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8CB1C3]/30 focus:border-[#8CB1C3] outline-none">
+                            </div>
+
+                            {{-- New Patient Name --}}
+                            <div id="new_patient_section" class="hidden space-y-1">
+                                <label class="text-[10px] font-black text-[#2D5A71]/60 uppercase tracking-widest ml-1">Patient Name:</label>
+                                <input type="text" name="new_patient_name" placeholder="Enter Full Name" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8CB1C3]">
+                            </div>
+
+                            {{-- Reason --}}
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-[#2D5A71]/60 uppercase tracking-widest ml-1">Reason for visiting:</label>
+                                <textarea name="reason" rows="3" placeholder="Brief description of symptoms or reason" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#8CB1C3] outline-none resize-none"></textarea>
+                            </div>
+
+                            {{-- Assign Doctor --}}
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-black text-[#2D5A71]/60 uppercase tracking-widest ml-1">Assign Doctor:</label>
+                                <select name="doctor_id" required class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-[#8CB1C3] outline-none">
+                                    <option value="" disabled selected>Select Doctor</option>
+                                    @foreach($doctors as $d)
+                                        @if(!$d->unavailabilities->where('date', request('schedule_date', date('Y-m-d')))->first())
+                                            <option value="{{ $d->id }}">Dr. {{ $d->name }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <button type="submit" class="w-full py-4 bg-[#99C59E] hover:bg-[#88B38D] text-[#2D5A71] rounded-xl font-black text-[12px] uppercase shadow-sm transition-all">Register Walk-in</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- SCRIPTS --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const regRadio = document.getElementById('type_regular');
+            const newRadio = document.getElementById('type_new');
+            const regSec = document.getElementById('regular_patient_section');
+            const newSec = document.getElementById('new_patient_section');
+            
+            function togglePatientInputs() {
+                if (regRadio.checked) {
+                    regSec.classList.remove('hidden');
+                    newSec.classList.add('hidden');
+                } else {
+                    regSec.classList.add('hidden');
+                    newSec.classList.remove('hidden');
+                }
+            }
+            
+            regRadio.addEventListener('change', togglePatientInputs);
+            newRadio.addEventListener('change', togglePatientInputs);
+
+            window.filterQueueByDoctor = function(docName, el) {
+                const items = document.querySelectorAll('.queue-item');
+                const cards = document.querySelectorAll('.doctor-card');
+                const indicator = document.getElementById('filter-indicator');
+
+                const isActive = el.classList.contains('bg-[#8CB1C3]');
+
+                // Reset all cards
+                cards.forEach(c => {
+                    c.classList.remove('bg-[#8CB1C3]', 'border-[#8CB1C3]', 'text-white');
+                    c.classList.add('bg-white', 'border-white');
+                    const nameTag = c.querySelector('.doctor-name');
+                    if(nameTag) nameTag.classList.remove('text-white');
+                });
+
+                if(!isActive) {
+                    el.classList.remove('bg-white', 'border-white');
+                    el.classList.add('bg-[#8CB1C3]', 'border-[#8CB1C3]', 'text-white');
+                    const nameTag = el.querySelector('.doctor-name');
+                    if(nameTag) nameTag.classList.add('text-white');
+
+                    indicator.classList.remove('hidden');
+                    indicator.innerText = `Viewing Dr. ${docName}`;
+
+                    items.forEach(i => {
+                        i.style.display = (i.dataset.doctorName === docName) ? 'flex' : 'none';
+                    });
+                } else {
+                    indicator.classList.add('hidden');
+                    items.forEach(i => i.style.display = 'flex');
+                }
+            }
+        });
+    </script>
+</x-app-layout>
