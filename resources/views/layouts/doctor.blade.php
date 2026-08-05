@@ -18,18 +18,28 @@
         .brand-text-blue { color: #236ff2; }
         .brand-header-text { color: #003366; }
         .brand-subtext-gray { color: #7794a3; }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-[#f4f7fc] text-slate-700 h-screen flex flex-col overflow-hidden font-sans">
+<body class="bg-[#f4f7fc] text-slate-700 h-screen flex flex-col overflow-hidden font-sans" x-data="{ mobileSidebarOpen: false }">
 
-    <div class="flex-1 flex overflow-hidden">
+    <div class="flex-1 flex overflow-hidden relative">
+
+        <!-- MOBILE BACKDROP -->
+        <div x-cloak x-show="mobileSidebarOpen" @click="mobileSidebarOpen = false" class="fixed inset-0 z-40 bg-black/50 md:hidden"></div>
 
         <!-- SIDEBAR -->
-        <aside class="hidden md:flex w-64 bg-[#1F6F8B] text-white flex-col justify-between p-6 shadow-xl shrink-0">
+        <aside x-cloak :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed md:static inset-y-0 left-0 z-50 w-64 bg-[#1F6F8B] text-white flex flex-col justify-between p-6 shadow-xl shrink-0 transform transition-transform duration-300 ease-in-out md:translate-x-0">
             <div class="space-y-8">
-                <div class="flex items-center gap-3">
-                    <img src="{{ asset('image/image-removebg-preview.png') }}" class="h-10 w-auto object-contain brightness-0 invert">
-                    <h1 class="text-xl font-bold tracking-wide font-['Montserrat_Alternates']" style="font-family: 'Montserrat Alternates', sans-serif;">Clinica Bansil</h1>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <img src="{{ asset('image/image-removebg-preview.png') }}" class="h-10 w-auto object-contain brightness-0 invert">
+                        <h1 class="text-xl font-bold tracking-wide font-['Montserrat_Alternates']" style="font-family: 'Montserrat Alternates', sans-serif;">Clinica Bansil</h1>
+                    </div>
+                    <!-- Mobile close button -->
+                    <button @click="mobileSidebarOpen = false" class="md:hidden text-white/80 hover:text-white">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
                 </div>
 
 
@@ -48,41 +58,57 @@
 
                 <!-- Navigation Links -->
                 <nav class="space-y-1.5 text-sm font-medium font-['Karma']" style="font-family: 'Karma', serif;">
-                    @php
-                        $links = [
-                            ['route' => 'doctor.dashboard', 'icon' => 'fa-gauge', 'label' => 'Dashboard'],
-                            ['route' => 'doctor.prescriptions.create', 'icon' => 'fi fi-ts-file-medical', 'label' => 'Prescriptions', 'is_fi' => true],
-                            ['route' => 'doctor.medicines.index', 'icon' => 'fa-capsules', 'label' => 'Medicines'],
-                            ['route' => 'doctor.patients.index', 'icon' => 'fa-regular fa-user', 'label' => 'Patients'],
-                            ['route' => 'doctor.schedules.index', 'icon' => 'fa-regular fa-calendar-plus', 'label' => 'Schedule'],
-                        ];
-                    @endphp
-                    @foreach($links as $link)
-                        <a href="{{ route($link['route']) }}" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs($link['route']) || (isset($link['wildcard']) && request()->routeIs($link['wildcard'])) ? 'bg-white brand-text-blue shadow-md font-semibold' : 'text-blue-100 hover:bg-white/10' }}">
-                            <i class="{{ $link['icon'] ?? 'fa-solid ' . $link['icon'] }} text-base"></i> <span>{{ $link['label'] }}</span>
-                        </a>
-                    @endforeach
+                    <!-- DESKTOP LINKS (Original full list) -->
+                    <div class="hidden md:block space-y-1.5">
+                        @php
+                            $desktopLinks = [
+                                ['route' => 'doctor.dashboard', 'icon' => 'fa-gauge', 'label' => 'Dashboard'],
+                                ['route' => 'doctor.prescriptions.create', 'icon' => 'fi fi-ts-file-medical', 'label' => 'Prescriptions', 'is_fi' => true],
+                                ['route' => 'doctor.medicines.index', 'icon' => 'fa-capsules', 'label' => 'Medicines'],
+                                ['route' => 'doctor.patients.index', 'icon' => 'fa-regular fa-user', 'label' => 'Patients'],
+                                ['route' => 'doctor.schedules.index', 'icon' => 'fa-regular fa-calendar-plus', 'label' => 'Schedule'],
+                            ];
+                        @endphp
+                        @foreach($desktopLinks as $link)
+                            <a href="{{ route($link['route']) }}" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs($link['route']) ? 'bg-white brand-text-blue shadow-md font-semibold' : 'text-blue-100 hover:bg-white/10' }}">
+                                <i class="{{ $link['icon'] }} text-base"></i> <span>{{ $link['label'] }}</span>
+                            </a>
+                        @endforeach
 
-                    @if(Auth::user()->is_admin ?? false)
-    <div class="pt-4 border-t border-white/20 mt-4">
-        <a href="{{ url('/admin/dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all font-semibold border border-white/20 shadow-inner">
-            <i class="fa-solid fa-user-shield text-base"></i> <span>Admin Mode</span>
-        </a>
-    </div>
-@endif
+                        @if(Auth::user()->is_admin ?? false)
+                            <div class="pt-4 border-t border-white/20 mt-4">
+                                <a href="{{ url('/admin/dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all font-semibold border border-white/20 shadow-inner">
+                                    <i class="fa-solid fa-user-shield text-base"><span>Admin Mode</span></i>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- MOBILE LINKS (Dashboard and Schedule only, Patients removed) -->
+                    <div class="md:hidden space-y-1.5">
+                        @php
+                            $mobileLinks = [
+                                ['route' => 'doctor.dashboard', 'icon' => 'fa-gauge', 'label' => 'Dashboard'],
+                                ['route' => 'doctor.schedules.index', 'icon' => 'fa-regular fa-calendar-plus', 'label' => 'Schedule'],
+                            ];
+                        @endphp
+                        @foreach($mobileLinks as $link)
+                            <a href="{{ route($link['route']) }}" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs($link['route']) ? 'bg-white brand-text-blue shadow-md font-semibold' : 'text-blue-100 hover:bg-white/10' }}">
+                                <i class="{{ $link['icon'] }} text-base"></i> <span>{{ $link['label'] }}</span>
+                            </a>
+                        @endforeach
+                    </div>
                 </nav>
             </div>
 
             <!-- Role Switcher & Sign Out -->
             <div class="mt-auto space-y-2">
-                {{-- Button para sa Admin --}}
                 @if(Auth::user()->role === 'admin')
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl font-bold tracking-wide transition w-full shadow-md">
                         <i class="fa-solid fa-gauge"></i> Admin Dashboard
                     </a>
                 @endif
 
-                {{-- Button para sa Clerk --}}
                 @if(Auth::user()->role === 'clerk')
                     <a href="{{ route('clerk.dashboard') }}" class="flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-3 rounded-xl font-bold tracking-wide transition w-full shadow-md">
                         <i class="fa-solid fa-clipboard-user"></i> Clerk Dashboard
@@ -99,20 +125,24 @@
         </aside>
 
         <!-- MAIN CONTENT AREA -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="brand-header bg-white px-8 py-5 flex justify-between items-center shrink-0 border-b border-slate-200/40 shadow-sm font-['Karma']" style="font-family: 'Karma', serif;">
+        <div class="flex-1 flex flex-col overflow-hidden w-full">
+            <header class="brand-header bg-white px-4 md:px-8 py-5 flex justify-between items-center shrink-0 border-b border-slate-200/40 shadow-sm font-['Karma']" style="font-family: 'Karma', serif;">
                 <div class="flex items-center gap-3">
+                    <!-- Mobile Hamburger Toggle -->
+                    <button @click="mobileSidebarOpen = !mobileSidebarOpen" class="md:hidden text-slate-700 hover:text-[#1F6F8B] focus:outline-none mr-1">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
                     <div>
-                        <h1 class="text-[25px] font-bold tracking-wide brand-header-text">@yield('title', 'Doctor Dashboard')</h1>
-                        <p class="text-[13px] brand-subtext-gray font-semibold uppercase tracking-wider -mt-1">Smart Healthcare System</p>
+                        <h1 class="text-[20px] md:text-[25px] font-bold tracking-wide brand-header-text">@yield('title', 'Doctor Dashboard')</h1>
+                        <p class="text-[11px] md:text-[13px] brand-subtext-gray font-semibold uppercase tracking-wider -mt-1">Smart Healthcare System</p>
                     </div>
                 </div>
-                <div class="text-sm brand-subtext-gray brand-header-text font-bold opacity-95">
+                <div class="text-xs md:text-sm brand-subtext-gray brand-header-text font-bold opacity-95">
                     {{ \Carbon\Carbon::now('Asia/Manila')->format('l, F d, Y') }}
                 </div>
             </header>
 
-            <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+            <main class="flex-1 p-4 md:p-8 overflow-y-auto">
                 @if(session('success'))
                     <div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl shadow-sm text-sm">{{ session('success') }}</div>
                 @endif
