@@ -76,12 +76,13 @@
                         @endforeach
 
                         @if(Auth::user()->is_admin ?? false)
-                            <div class="pt-4 border-t border-white/20 mt-4">
-                                <a href="{{ url('/admin/dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all font-semibold border border-white/20 shadow-inner">
-                                    <i class="fa-solid fa-user-shield text-base"><span>Admin Mode</span></i>
-                                </a>
-                            </div>
-                        @endif
+                        <div class="pt-3 border-t border-white/20 mt-3">
+                            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-white/10 transition-all duration-200">
+                                <i class="fa-solid fa-user-shield text-base"></i>
+                                <span>Admin Mode</span>
+                            </a>
+                        </div>
+                    @endif
                     </div>
 
                     <!-- MOBILE LINKS (Dashboard and Schedule only, Patients removed) -->
