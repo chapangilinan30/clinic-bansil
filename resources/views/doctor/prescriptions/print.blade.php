@@ -941,7 +941,7 @@
                 </div>
                 <div class="clinic-info" contenteditable="true">
                     Pampang, Angeles City, Philippines <br>
-                    Contact: 09XX-XXX-XXXX &bull; License No. PR-XXXXX
+                    
                 </div>
             </div>
         </div>
