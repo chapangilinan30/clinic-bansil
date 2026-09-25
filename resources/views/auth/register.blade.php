@@ -96,22 +96,87 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-3 pt-2">
-                    <div class="flex items-center justify-between px-4">
-                        <div class="flex items-center gap-2">
-                            <input type="checkbox" id="terms" name="terms" required class="w-4 h-4 rounded border-gray-300 text-[#4a79f2] focus:ring-[#4a79f2]">
-                            <label for="terms" class="text-[11px] text-gray-600 font-medium cursor-pointer">
-                                I agree to the <a href="{{ route('terms') }}" target="_blank" class="text-[#4a79f2] hover:underline font-semibold">Terms & Conditions</a>
-                            </label>
-                        </div>
-                        <a class="text-[11px] text-gray-600 hover:text-[#4a79f2] underline" href="{{ route('login') }}">Already registered?</a>
-                    </div>
-                    <button type="submit" class="w-full bg-[#4a79f2] text-white py-3.5 rounded-2xl font-bold shadow-lg hover:bg-blue-600 transition-all uppercase tracking-widest text-sm">
-                        Register
-                    </button>
-                </div>
+             <div class="flex flex-col gap-3 pt-2">
+    <div class="flex items-center justify-between px-4">
+        <div class="flex items-center gap-2">
+            <input type="checkbox" id="terms" name="terms" required class="w-4 h-4 rounded border-gray-300 text-[#4a79f2] focus:ring-[#4a79f2]">
+            <label for="terms" class="text-[11px] text-gray-600 font-medium cursor-pointer">
+                I have read the <a href="#" target="_blank" class="text-[#4a79f2] hover:underline font-semibold">Terms &amp; Conditions</a>
+            </label>
+        </div>
+        <a class="text-[11px] text-gray-600 hover:text-[#4a79f2] underline" href="{{ route('login') }}">Already registered?</a>
+    </div>
+    <button type="submit" class="w-full bg-[#4a79f2] text-white py-3.5 rounded-2xl font-bold shadow-lg hover:bg-blue-600 transition-all uppercase tracking-widest text-sm">
+        Register
+    </button>
+</div>
             </form>
         </div>
     </div>
+
+    <div id="termsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/45 px-4">
+        <div class="w-full max-w-md rounded-[2rem] border border-sky-100 bg-white/90 p-6 shadow-2xl backdrop-blur-md">
+            <div class="mb-4 flex items-center justify-between">
+                <h4 class="text-xl font-bold text-[#1e4d6d]">Consent Confirmation</h4>
+                <button type="button" data-close-modal class="text-xl text-gray-500 transition hover:text-gray-700">×</button>
+            </div>
+
+            <p class="text-sm leading-6 text-gray-700">
+                By checking this box, you confirm that the information you have provided is true and accurate, and you consent to its use for patient registration, record management, and clinic processing in accordance with our Terms &amp; Conditions.
+            </p>
+
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" data-close-modal class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-100">
+                    Cancel
+                </button>
+                <button type="button" id="confirmTermsBtn" class="rounded-xl bg-[#4a79f2] px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-blue-600">
+                    I Agree
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const termsCheckbox = document.getElementById('terms');
+            const termsModal = document.getElementById('termsModal');
+            const confirmTermsBtn = document.getElementById('confirmTermsBtn');
+            const closeButtons = document.querySelectorAll('[data-close-modal]');
+
+            if (!termsCheckbox || !termsModal || !confirmTermsBtn) return;
+
+            function closeTermsModal() {
+                termsModal.classList.add('hidden');
+                termsModal.classList.remove('flex');
+            }
+
+            function openTermsModal() {
+                termsModal.classList.remove('hidden');
+                termsModal.classList.add('flex');
+            }
+
+            termsCheckbox.addEventListener('change', function () {
+                if (!this.checked) return;
+
+                this.checked = false;
+                openTermsModal();
+            });
+
+            confirmTermsBtn.addEventListener('click', function () {
+                termsCheckbox.checked = true;
+                closeTermsModal();
+            });
+
+            closeButtons.forEach(function (button) {
+                button.addEventListener('click', closeTermsModal);
+            });
+
+            termsModal.addEventListener('click', function (event) {
+                if (event.target === termsModal) {
+                    closeTermsModal();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
