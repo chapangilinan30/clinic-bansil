@@ -45,30 +45,15 @@ class ClerkController extends Controller
 
         $queue->transform(function ($appointment) use ($now) {
             if (in_array(strtolower($appointment->status), ['pending', 'booked'])) {
-                
-                // 1. Extract only the date part (YYYY-MM-DD)
                 $dateOnly = Carbon::parse($appointment->appointment_date)->toDateString();
-                
-                // 2. Extract only the time part
                 $timeOnly = Carbon::parse($appointment->appointment_time)->format('H:i:s');
-                
-                // 3. Parse clean combined DateTime
                 $appointmentDateTime = Carbon::parse("{$dateOnly} {$timeOnly}", 'Asia/Manila');
 
-                // Check-in window opens 20 minutes before the appointment time
-                $checkInStart = $appointmentDateTime->copy()->subMinutes(20);
-                
-                // The absolute deadline to check-in is the exact appointment time (e.g., 5:30 PM)
-                $appointmentTime = $appointmentDateTime;
-
-                // If current time has passed the appointment time and they haven't checked in:
-                if ($now->greaterThan($appointmentTime)) {
+                if ($now->greaterThanOrEqualTo($appointmentDateTime)) {
                     $appointment->status = 'no-show';
-                    
-                    // Persist the status update in the database
+                    $appointment->cancel_reason = 'Auto-cancelled: patient did not check in before the scheduled appointment time.';
                     $appointment->save();
 
-                    // --- ROBUST USER RESOLUTION FOR NOTIFICATIONS ---
                     $targetUser = null;
 
                     if ($appointment->relationLoaded('user') && $appointment->user) {
@@ -79,10 +64,9 @@ class ClerkController extends Controller
                         $targetUser = \App\Models\User::find($appointment->patient->user_id);
                     }
 
-                    // Send the database notification using the resolved user model
                     if ($targetUser) {
                         $targetUser->notify(
-                            new \App\Notifications\AppointmentStatusNotification($appointment, 'Your appointment has been marked as No-Show due to missed check-in time.')
+                            new \App\Notifications\AppointmentStatusNotification($appointment, 'Your appointment has been marked as No-Show because you did not check in before the scheduled time.')
                         );
                     }
                 }
