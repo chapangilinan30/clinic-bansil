@@ -99,8 +99,10 @@
                 <div class="flex flex-col gap-3 pt-2">
                     <div class="flex items-center justify-between px-4">
                         <div class="flex items-center gap-2">
-                            <input type="checkbox" name="terms" required class="w-4 h-4 rounded border-gray-300 text-[#4a79f2]">
-                            <label class="text-[11px] text-gray-600 font-medium">I agree to terms</label>
+                            <input type="checkbox" id="terms" name="terms" required class="w-4 h-4 rounded border-gray-300 text-[#4a79f2] focus:ring-[#4a79f2]">
+                            <label for="terms" class="text-[11px] text-gray-600 font-medium cursor-pointer">
+                                I agree to the <a href="{{ route('terms') }}" target="_blank" class="text-[#4a79f2] hover:underline font-semibold">Terms & Conditions</a>
+                            </label>
                         </div>
                         <a class="text-[11px] text-gray-600 hover:text-[#4a79f2] underline" href="{{ route('login') }}">Already registered?</a>
                     </div>
