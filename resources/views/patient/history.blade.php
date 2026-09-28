@@ -209,10 +209,6 @@
                                             <span class="text-rose-500 font-medium italic">
                                                 Cancelled: {{ $visit->cancel_reason ?? 'No reason provided' }}
                                             </span>
-                                        @elseif(strtolower($visit->status) === 'no-show')
-                                            <span class="text-red-500 font-medium italic">
-                                                No-show: Patient did not check in before the scheduled appointment time.
-                                            </span>
                                         @elseif($visit->prescription && $visit->prescription->diagnosis)
                                             <span class="text-slate-700 font-semibold">{{ $visit->prescription->diagnosis }}</span>
                                         @else
@@ -227,10 +223,6 @@
                                         @elseif(strtolower($visit->status) === 'cancelled')
                                             <span class="inline-block bg-rose-50 text-rose-700 border border-rose-200 rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">
                                                 Cancelled
-                                            </span>
-                                        @elseif(strtolower($visit->status) === 'no-show')
-                                            <span class="inline-block bg-red-50 text-red-700 border border-red-200 rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">
-                                                No-Show
                                             </span>
                                         @else
                                             <span class="inline-block bg-slate-100 text-slate-600 rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">
@@ -366,8 +358,7 @@
                         <span :class="{
                             'bg-emerald-50 text-emerald-700 border-emerald-200': selectedVisit.status === 'Completed',
                             'bg-rose-50 text-rose-700 border-rose-200': selectedVisit.status === 'Cancelled',
-                            'bg-red-50 text-red-700 border-red-200': selectedVisit.status === 'No-show' || selectedVisit.status === 'No-Show',
-                            'bg-slate-100 text-slate-600 border-slate-200': selectedVisit.status !== 'Completed' && selectedVisit.status !== 'Cancelled' && selectedVisit.status !== 'No-show' && selectedVisit.status !== 'No-Show'
+                            'bg-slate-100 text-slate-600 border-slate-200': selectedVisit.status !== 'Completed' && selectedVisit.status !== 'Cancelled'
                         }" class="inline-block px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border mt-1" x-text="selectedVisit.status"></span>
                     </div>
                 </div>
@@ -377,17 +368,14 @@
                     <div class="bg-slate-50/50 border border-slate-100 rounded-xl p-3 text-slate-700 text-xs font-medium leading-relaxed" x-text="selectedVisit.reason"></div>
                 </div>
 
-                <div x-show="selectedVisit.status === 'Cancelled' || selectedVisit.status === 'No-show' || selectedVisit.status === 'No-Show'" class="space-y-1.5">
-                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        <span x-show="selectedVisit.status === 'Cancelled'">Reason for Cancellation</span>
-                        <span x-show="selectedVisit.status === 'No-show' || selectedVisit.status === 'No-Show'">Reason for No-Show</span>
-                    </span>
-                    <div :class="selectedVisit.status === 'Cancelled' ? 'bg-rose-50 border-rose-100 text-rose-900' : 'bg-red-50 border-red-100 text-red-900'" class="border rounded-xl p-3 font-semibold text-xs leading-relaxed" 
+                <div x-show="selectedVisit.status === 'Cancelled'" class="space-y-1.5">
+                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Reason for Cancellation</span>
+                    <div class="bg-rose-50 border border-rose-100 rounded-xl p-3 text-rose-900 font-semibold text-xs leading-relaxed" 
                          x-text="selectedVisit.cancelReason || 'No reason was provided.'">
                     </div>
                 </div>
 
-                <div x-show="selectedVisit.status !== 'Cancelled' && selectedVisit.status !== 'No-show' && selectedVisit.status !== 'No-Show'" class="space-y-6">
+                <div x-show="selectedVisit.status !== 'Cancelled'" class="space-y-6">
                     <div class="space-y-1.5">
                         <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Doctor's Diagnosis</span>
                         <div class="bg-blue-50/40 border border-blue-100 rounded-xl p-3 text-[#003366] font-bold text-xs leading-relaxed" x-text="selectedVisit.diagnosis"></div>

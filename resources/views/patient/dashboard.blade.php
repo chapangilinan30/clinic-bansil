@@ -183,7 +183,7 @@
                 @endif
 
                 {{-- MOBILE QUICK BOOKING BUTTON --}}
-                <div class="block lg:hidden font-karma">
+                <div class= "block lg:hidden font-karma">
                     @if(auth()->user()->is_locked_from_booking)
                         <div class="bg-white border border-slate-200/80 rounded-xl py-3.5 px-4 text-center select-none shadow-sm">
                             <p class="text-[11px] font-bold text-rose-500 uppercase tracking-wide flex items-center justify-center gap-1.5">

@@ -243,6 +243,12 @@
                                 </div>
 
                                 <div id="queue-list" class="space-y-3">
+                                    @php
+                                        $nextQueueItemId = $queue->first(function ($appointment) {
+                                            $status = strtolower($appointment->status ?: 'pending');
+                                            return in_array($status, ['pending', 'booked', 'checked-in'], true);
+                                        })?->id;
+                                    @endphp
                                     @forelse($queue as $item)
                                         @php
                                             $status = strtolower($item->status ?: 'pending');
@@ -255,6 +261,7 @@
                                                 'completed' => ['border'=>'border-slate-100 opacity-50 bg-slate-50/50', 'num'=>'bg-slate-100 text-slate-400', 'next_status'=>null, 'btn_text'=>'Done', 'btn_color'=>'bg-slate-100 text-slate-400 pointer-events-none', 'icon'=>'fa-check-double'],
                                                 default => ['border'=>'border-slate-100', 'num'=>'bg-[#CBDCEB]/50', 'next_status'=>'checked-in', 'btn_text'=>'Check In', 'btn_color'=>'bg-emerald-500', 'icon'=>'fa-check'],
                                             };
+                                            $canActivate = $status !== 'checked-in' || $item->id === $nextQueueItemId;
                                         @endphp
 
                                         <div class="queue-item flex items-center justify-between p-3 rounded-lg border-2 {{ $config['border'] }} shadow-sm transition-all duration-200"
@@ -285,7 +292,7 @@
                                                     <form action="{{ route('clerk.appointments.update-status', $item->id) }}" method="POST">
                                                         @csrf @method('PATCH')
                                                         <input type="hidden" name="status" value="{{ $config['next_status'] }}">
-                                                        <button type="submit" class="flex items-center gap-1.5 px-4 py-1.5 {{ $config['btn_color'] }} text-white rounded-md text-[10px] font-black uppercase tracking-wider shadow-sm transition-all active:scale-95">
+                                                        <button type="submit" @if(!$canActivate) disabled @endif class="flex items-center gap-1.5 px-4 py-1.5 {{ $canActivate ? $config['btn_color'] : 'bg-slate-200 text-slate-500 cursor-not-allowed opacity-60' }} rounded-md text-[10px] font-black uppercase tracking-wider shadow-sm transition-all active:scale-95">
                                                             <i class="fa-solid {{ $config['icon'] }}"></i> {{ $config['btn_text'] }}
                                                         </button>
                                                     </form>

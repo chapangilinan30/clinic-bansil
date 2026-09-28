@@ -45,15 +45,30 @@ class ClerkController extends Controller
 
         $queue->transform(function ($appointment) use ($now) {
             if (in_array(strtolower($appointment->status), ['pending', 'booked'])) {
+                
+                // 1. Extract only the date part (YYYY-MM-DD)
                 $dateOnly = Carbon::parse($appointment->appointment_date)->toDateString();
+                
+                // 2. Extract only the time part
                 $timeOnly = Carbon::parse($appointment->appointment_time)->format('H:i:s');
+                
+                // 3. Parse clean combined DateTime
                 $appointmentDateTime = Carbon::parse("{$dateOnly} {$timeOnly}", 'Asia/Manila');
 
-                if ($now->greaterThanOrEqualTo($appointmentDateTime)) {
+                // Check-in window opens 20 minutes before the appointment time
+                $checkInStart = $appointmentDateTime->copy()->subMinutes(20);
+                
+                // The absolute deadline to check-in is the exact appointment time (e.g., 5:30 PM)
+                $appointmentTime = $appointmentDateTime;
+
+                // If current time has passed the appointment time and they haven't checked in:
+                if ($now->greaterThan($appointmentTime)) {
                     $appointment->status = 'no-show';
-                    $appointment->cancel_reason = 'Auto-cancelled: patient did not check in before the scheduled appointment time.';
+                    
+                    // Persist the status update in the database
                     $appointment->save();
 
+                    // --- ROBUST USER RESOLUTION FOR NOTIFICATIONS ---
                     $targetUser = null;
 
                     if ($appointment->relationLoaded('user') && $appointment->user) {
@@ -64,9 +79,10 @@ class ClerkController extends Controller
                         $targetUser = \App\Models\User::find($appointment->patient->user_id);
                     }
 
+                    // Send the database notification using the resolved user model
                     if ($targetUser) {
                         $targetUser->notify(
-                            new \App\Notifications\AppointmentStatusNotification($appointment, 'Your appointment has been marked as No-Show because you did not check in before the scheduled time.')
+                            new \App\Notifications\AppointmentStatusNotification($appointment, 'Your appointment has been marked as No-Show due to missed check-in time.')
                         );
                     }
                 }
@@ -139,6 +155,41 @@ class ClerkController extends Controller
         ]);
 
         $appointment = Appointment::findOrFail($id);
+        $requestedStatus = strtolower(str_replace('_', '-', $request->status));
+
+        $progressStatuses = ['called', 'in-progress', 'in_progress', 'in-session', 'waiting', 'pending', 'scheduled', 'booked'];
+        if (in_array($requestedStatus, $progressStatuses, true)) {
+            $hasUnfinishedEarlierAppointment = Appointment::where('doctor_id', $appointment->doctor_id)
+                ->whereDate('appointment_date', $appointment->appointment_date)
+                ->where('queue_number', '<', $appointment->queue_number)
+                ->get(['status'])
+                ->contains(function ($earlierAppointment) {
+                    $status = strtolower(str_replace('_', '-', $earlierAppointment->status ?: 'pending'));
+
+                    return !in_array($status, ['completed', 'cancelled', 'no-show', 'noshow'], true);
+                });
+
+            if ($hasUnfinishedEarlierAppointment) {
+                return redirect()->back()->with('error', "Patient 2 is currently locked. Please complete Patient 1 or update Patient 1's status to No-Show or Cancelled before proceeding.");
+            }
+        }
+
+        if ($requestedStatus === 'called') {
+            $nextEligibleAppointment = Appointment::where('doctor_id', $appointment->doctor_id)
+                ->whereDate('appointment_date', $appointment->appointment_date)
+                ->where(function ($query) {
+                    $query->whereIn('status', ['pending', 'booked', 'checked-in'])
+                        ->orWhereNull('status')
+                        ->orWhere('status', '');
+                })
+                ->orderBy('queue_number', 'asc')
+                ->first();
+
+            if ($nextEligibleAppointment && $nextEligibleAppointment->id !== $appointment->id) {
+                return redirect()->back()->with('error', 'Only the next patient in queue can start.');
+            }
+        }
+
         $appointment->status = $request->status;
         $appointment->save();
 
