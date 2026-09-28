@@ -110,7 +110,7 @@ public function complete($id)
 
     // Notify patient if needed
     if ($appointment->patient) {
-        $appointment->patient->notify(new AppointmentStatusNotification($appointment));
+        $appointment->patient->notify(new AppointmentStatusNotification('Your appointment has been marked as completed.'));
     }
 
     return redirect()->back()->with('success', 'Appointment marked as completed.');
@@ -123,7 +123,9 @@ public function complete($id)
 
     // Use the correct relationship
     if ($appointment->patient) {
-        $appointment->patient->notify(new AppointmentStatusNotification($appointment));
+        $appointment->patient->notify(new AppointmentStatusNotification(
+            'Your appointment status has been updated to: ' . ucwords(str_replace('-', ' ', $status))
+        ));
     }
 
     return redirect()->back()->with('success', 'Patient status updated to ' . ucwords(str_replace('-', ' ', $status)));

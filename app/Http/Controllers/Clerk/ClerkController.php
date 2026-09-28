@@ -55,14 +55,10 @@ class ClerkController extends Controller
                 // 3. Parse clean combined DateTime
                 $appointmentDateTime = Carbon::parse("{$dateOnly} {$timeOnly}", 'Asia/Manila');
 
-                // Check-in window opens 20 minutes before the appointment time
-                $checkInStart = $appointmentDateTime->copy()->subMinutes(20);
-                
-                // The absolute deadline to check-in is the exact appointment time (e.g., 5:30 PM)
-                $appointmentTime = $appointmentDateTime;
+                // Allow one minute after the scheduled time before marking a no-show.
+                $noShowAt = $appointmentDateTime->copy()->addMinute();
 
-                // If current time has passed the appointment time and they haven't checked in:
-                if ($now->greaterThan($appointmentTime)) {
+                if ($now->greaterThanOrEqualTo($noShowAt)) {
                     $appointment->status = 'no-show';
                     
                     // Persist the status update in the database
@@ -82,7 +78,7 @@ class ClerkController extends Controller
                     // Send the database notification using the resolved user model
                     if ($targetUser) {
                         $targetUser->notify(
-                            new \App\Notifications\AppointmentStatusNotification($appointment, 'Your appointment has been marked as No-Show due to missed check-in time.')
+                            new \App\Notifications\AppointmentStatusNotification('Your appointment has been marked as No-Show due to missed check-in time.')
                         );
                     }
                 }
@@ -199,7 +195,7 @@ class ClerkController extends Controller
 
         if ($targetUser) {
             $targetUser->notify(
-                new AppointmentStatusNotification($appointment, "Your appointment status has been updated to: {$request->status}")
+                new AppointmentStatusNotification("Your appointment status has been updated to: {$request->status}")
             );
         }
 

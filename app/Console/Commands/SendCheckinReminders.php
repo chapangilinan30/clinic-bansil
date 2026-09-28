@@ -10,7 +10,7 @@ use App\Notifications\AppointmentStatusNotification;
 class SendCheckinReminders extends Command
 {
     protected $signature = 'appointments:checkin-reminder {--test : Run in test mode for immediate notifications}';
-    protected $description = 'Send reminders 20 minutes before appointments and mark no-shows 15 minutes after if pending';
+    protected $description = 'Send reminders 20 minutes before appointments and mark no-shows one minute after their scheduled time';
 
     public function handle()
     {
@@ -30,8 +30,7 @@ class SendCheckinReminders extends Command
         } else {
             // Normal mode
             $reminderTime = $now->copy()->addMinutes(20)->format('H:i');
-            $noShowTime = $now->copy()->subMinutes(10)->format('H:i');
-
+            $noShowCutoff = $now->copy()->subMinute()->format('H:i:s');
             $appointmentsForReminder = Appointment::where('status', 'pending')
                 ->where('appointment_date', $today)
                 ->where('appointment_time', $reminderTime)
@@ -39,7 +38,7 @@ class SendCheckinReminders extends Command
 
             $appointmentsNoShow = Appointment::where('status', 'pending')
                 ->where('appointment_date', $today)
-                ->where('appointment_time', '<=', $noShowTime)
+                ->whereTime('appointment_time', '<=', $noShowCutoff)
                 ->get();
         }
 

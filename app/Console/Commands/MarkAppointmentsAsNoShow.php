@@ -4,20 +4,18 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Appointment;
+use App\Notifications\AppointmentStatusNotification;
 use Carbon\Carbon;
 
 class MarkAppointmentsAsNoShow extends Command
 {
     protected $signature = 'appointments:mark-no-shows';
-    protected $description = 'Automatically mark pending appointments as no-show if not checked in 20 minutes before time';
+    protected $description = 'Mark pending appointments as no-show one minute after their scheduled time';
 
     public function handle()
 {
     $now = Carbon::now('Asia/Manila');
-    $threshold = $now->copy()->subMinutes(20);
-
     $this->info("Current Time: " . $now->toTimeString());
-    $this->info("Threshold (Time - 20m): " . $threshold->toTimeString());
 
     // Let's find ALL pending appointments for today, regardless of time
     $allPending = Appointment::where('status', 'pending')
@@ -28,9 +26,18 @@ class MarkAppointmentsAsNoShow extends Command
 
     foreach ($allPending as $appt) {
         $this->info("Checking ID {$appt->id}: Appointment Time is {$appt->appointment_time}");
-        
-        if ($appt->appointment_time <= $threshold->toTimeString()) {
+
+        $appointmentDate = Carbon::parse($appt->appointment_date)->toDateString();
+        $appointmentTime = Carbon::parse($appt->appointment_time)->format('H:i:s');
+        $appointmentDateTime = Carbon::parse("{$appointmentDate} {$appointmentTime}", 'Asia/Manila');
+
+        if ($appointmentDateTime->copy()->addMinute()->lessThanOrEqualTo($now)) {
             $appt->update(['status' => 'no-show']);
+            if ($appt->user) {
+                $appt->user->notify(new AppointmentStatusNotification(
+                    "Your appointment at {$appt->appointment_time} was marked as no-show because you did not check in by the scheduled time."
+                ));
+            }
             $this->info(" -> Marked as no-show!");
         } else {
             $this->info(" -> Too early to mark as no-show.");
