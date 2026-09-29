@@ -192,6 +192,38 @@
                             {{ session('error') }}
                         </div>
                     @endif
+
+                    @if($checkInDueAppointments->isNotEmpty())
+                        <section role="alert" aria-live="polite" class="mb-4 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 shadow-sm sm:p-5">
+                            <div class="mb-3 flex items-center gap-2 text-amber-900">
+                                <i class="fa-solid fa-bell animate-pulse"></i>
+                                <h2 class="text-sm font-black uppercase tracking-wider">Patient check-in due</h2>
+                            </div>
+                            <div class="space-y-2">
+                                @foreach($checkInDueAppointments as $dueAppointment)
+                                    <div class="flex flex-col gap-3 rounded-lg border border-amber-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div class="min-w-0">
+                                            <p class="truncate text-sm font-bold text-slate-800">{{ $dueAppointment->patient_name ?? 'Guest Patient' }}</p>
+                                            <p class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-slate-600">
+                                                <span class="rounded-md bg-amber-100 px-2 py-1 font-black text-amber-900">{{ \Carbon\Carbon::parse($dueAppointment->appointment_time)->format('g:i A') }}</span>
+                                                <span>Ticket #{{ $dueAppointment->queue_number }}</span>
+                                                <span>{{ $dueAppointment->doctor->name ?? $dueAppointment->doctor_name }}</span>
+                                            </p>
+                                        </div>
+                                        <form action="{{ route('clerk.appointments.update-status', $dueAppointment->id) }}" method="POST" class="shrink-0">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="status" value="checked-in">
+                                            <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-xs font-black uppercase text-white transition hover:bg-amber-700 sm:w-auto">
+                                                <i class="fa-solid fa-check"></i> Check In
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </section>
+                    @endif
+
                     <div class="grid grid-cols-12 gap-4 sm:gap-6">
 
                         {{-- LEFT COLUMN --}}

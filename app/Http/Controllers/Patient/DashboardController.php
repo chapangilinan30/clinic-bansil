@@ -24,11 +24,22 @@ class DashboardController extends Controller
         // 1. Get the patient's active (upcoming or ongoing) appointment
         $activeAppointment = Appointment::with('doctor')
             ->where('user_id', $userId)
-            ->whereIn('status', ['pending', 'confirmed', 'checked-in', 'called', 'in_progress'])
+            ->whereIn('status', ['pending', 'booked', 'confirmed', 'checked-in', 'called', 'in_progress'])
             ->latest()
             ->first();
 
         $hasActiveAppointment = $activeAppointment ? true : false;
+        $checkInWindowOpen = false;
+
+        if ($activeAppointment && in_array(strtolower($activeAppointment->status), ['pending', 'booked'], true)) {
+            $appointmentDate = \Carbon\Carbon::parse($activeAppointment->appointment_date)->toDateString();
+            $appointmentTime = \Carbon\Carbon::parse($activeAppointment->appointment_time)->format('H:i:s');
+            $appointmentDateTime = \Carbon\Carbon::parse("{$appointmentDate} {$appointmentTime}", 'Asia/Manila');
+            $now = \Carbon\Carbon::now('Asia/Manila');
+
+            $checkInWindowOpen = $now->greaterThanOrEqualTo($appointmentDateTime->copy()->subMinutes(20))
+                && $now->lessThan($appointmentDateTime->copy()->addMinute());
+        }
 
         // ============================
         // UPCOMING APPOINTMENTS
@@ -96,6 +107,7 @@ class DashboardController extends Controller
         return view('patient.dashboard', compact(
             'activeAppointment',
             'hasActiveAppointment',
+            'checkInWindowOpen',
             'upcoming',
             'history',
             'queueData',

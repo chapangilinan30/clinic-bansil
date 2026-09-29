@@ -89,6 +89,19 @@ class ClerkController extends Controller
             return $appointment;
         });
 
+        $checkInDueAppointments = $queue->filter(function ($appointment) use ($now) {
+            if (!in_array(strtolower($appointment->status ?: 'pending'), ['pending', 'booked'], true)) {
+                return false;
+            }
+
+            $date = Carbon::parse($appointment->appointment_date)->toDateString();
+            $time = Carbon::parse($appointment->appointment_time)->format('H:i:s');
+            $appointmentDateTime = Carbon::parse("{$date} {$time}", 'Asia/Manila');
+
+            return $now->greaterThanOrEqualTo($appointmentDateTime->copy()->subMinutes(20))
+                && $now->lessThan($appointmentDateTime->copy()->addMinute());
+        })->values();
+
         $upcoming = $queue->first() ? collect([$queue->first()]) : collect();
 
         $history = Appointment::with(['doctor', 'patient'])
@@ -139,7 +152,7 @@ class ClerkController extends Controller
 
         return view('clerk.dashboard', compact(
             'queue', 'upcoming', 'history', 'doctors_data', 'selectedDate',
-            'totalToday', 'pending', 'checkedIn', 'called', 'walkIns',
+            'totalToday', 'pending', 'checkedIn', 'called', 'walkIns', 'checkInDueAppointments',
             'noShows', 'existingPatients', 'services'
         ));
     }

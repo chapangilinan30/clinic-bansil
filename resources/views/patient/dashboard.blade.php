@@ -205,6 +205,26 @@
                     @endif
                 </div>
 
+                @if(($checkInWindowOpen ?? false) && isset($activeAppointment) && $activeAppointment)
+                    <section role="alert" aria-live="polite" class="mb-4 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 shadow-sm sm:p-5 font-karma">
+                        <div class="flex items-start gap-3">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-white">
+                                <i class="fa-solid fa-bell animate-pulse"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h2 class="text-sm font-black uppercase text-amber-900">Check-in is now open</h2>
+                                <p class="mt-1 text-xs font-semibold leading-relaxed text-amber-900">
+                                    Please check in at reception for your appointment with
+                                    {{ $activeAppointment->doctor->name ?? 'your doctor' }}.
+                                </p>
+                                <p class="mt-2 inline-flex rounded-md border border-amber-200 bg-white px-2.5 py-1 text-xs font-black text-amber-900">
+                                    {{ \Carbon\Carbon::parse($activeAppointment->appointment_time)->format('g:i A') }}
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                @endif
+
                 {{-- ACTIVE APPOINTMENT CARD --}}
                 @if(isset($activeAppointment) && $activeAppointment)
                 <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-[#1F6F8B] border-y border-r border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 font-karma">

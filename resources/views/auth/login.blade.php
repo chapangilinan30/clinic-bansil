@@ -42,9 +42,15 @@
 
                 <!-- Password -->
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 ml-4">Password</label>
-                    <input type="password" name="password" required 
-                           class="w-full border-gray-200/85 rounded-2xl py-2.5 px-6 text-sm outline-none shadow-sm bg-white/70 focus:border-[#4a79f2] transition-all">
+                    <label for="loginPassword" class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 ml-4">Password</label>
+                    <div class="relative">
+                        <input id="loginPassword" type="password" name="password" required autocomplete="current-password"
+                               class="w-full border-gray-200/85 rounded-2xl py-2.5 pl-6 pr-20 text-sm outline-none shadow-sm bg-white/70 focus:border-[#4a79f2] transition-all">
+                        <button type="button" data-password-toggle="loginPassword" aria-label="Show password" aria-pressed="false"
+                                class="absolute inset-y-0 right-5 my-auto h-fit text-xs font-bold text-[#1e4d6d] hover:text-[#4a79f2] focus:outline-none focus:underline">
+                            Show
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Actions & Remember Me -->
@@ -75,5 +81,19 @@
             </form>
         </div>
     </div>
+    <script>
+        document.querySelectorAll('[data-password-toggle]').forEach(function (toggleButton) {
+            const passwordInput = document.getElementById(toggleButton.dataset.passwordToggle);
+            if (!passwordInput) return;
+
+            toggleButton.addEventListener('click', function () {
+                const isHidden = passwordInput.type === 'password';
+                passwordInput.type = isHidden ? 'text' : 'password';
+                toggleButton.textContent = isHidden ? 'Hide' : 'Show';
+                toggleButton.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+                toggleButton.setAttribute('aria-pressed', String(isHidden));
+            });
+        });
+    </script>
 </body>
 </html>
