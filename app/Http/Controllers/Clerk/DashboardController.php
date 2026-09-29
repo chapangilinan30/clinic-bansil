@@ -31,7 +31,10 @@ public function index(Request $request)
         $queueQuery->where('doctor_id', $doctorId);
     }
 
-    $queue = $queueQuery->orderBy('queue_number', 'asc')->get();
+    $queue = $queueQuery
+        ->orderBy('appointment_time', 'asc')
+        ->orderBy('queue_number', 'asc')
+        ->get();
     $upcoming = $queue->first() ? collect([$queue->first()]) : collect();
 
     // 2. Sidebar doctors

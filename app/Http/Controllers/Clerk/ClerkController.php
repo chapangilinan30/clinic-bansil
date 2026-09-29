@@ -38,7 +38,10 @@ class ClerkController extends Controller
             $queueQuery->where('doctor_id', $doctorId);
         }
 
-        $queue = $queueQuery->orderBy('queue_number', 'asc')->get();
+        $queue = $queueQuery
+            ->orderBy('appointment_time', 'asc')
+            ->orderBy('queue_number', 'asc')
+            ->get();
 
         // --- DYNAMIC NO-SHOW CALCULATION ---
         $now = Carbon::now('Asia/Manila');
@@ -155,9 +158,16 @@ class ClerkController extends Controller
 
         $progressStatuses = ['called', 'in-progress', 'in_progress', 'in-session', 'waiting', 'pending', 'scheduled', 'booked'];
         if (in_array($requestedStatus, $progressStatuses, true)) {
+            $appointmentTime = Carbon::parse($appointment->appointment_time)->format('H:i:s');
             $hasUnfinishedEarlierAppointment = Appointment::where('doctor_id', $appointment->doctor_id)
                 ->whereDate('appointment_date', $appointment->appointment_date)
-                ->where('queue_number', '<', $appointment->queue_number)
+                ->where(function ($query) use ($appointment, $appointmentTime) {
+                    $query->whereTime('appointment_time', '<', $appointmentTime)
+                        ->orWhere(function ($sameTime) use ($appointment, $appointmentTime) {
+                            $sameTime->whereTime('appointment_time', '=', $appointmentTime)
+                                ->where('queue_number', '<', $appointment->queue_number);
+                        });
+                })
                 ->get(['status'])
                 ->contains(function ($earlierAppointment) {
                     $status = strtolower(str_replace('_', '-', $earlierAppointment->status ?: 'pending'));
@@ -166,7 +176,7 @@ class ClerkController extends Controller
                 });
 
             if ($hasUnfinishedEarlierAppointment) {
-                return redirect()->back()->with('error', "Patient 2 is currently locked. Please complete Patient 1 or update Patient 1's status to No-Show or Cancelled before proceeding.");
+                return redirect()->back()->with('error', 'This appointment is waiting for an earlier appointment time to be completed, cancelled, or marked as no-show.');
             }
         }
 
@@ -178,6 +188,7 @@ class ClerkController extends Controller
                         ->orWhereNull('status')
                         ->orWhere('status', '');
                 })
+                ->orderBy('appointment_time', 'asc')
                 ->orderBy('queue_number', 'asc')
                 ->first();
 

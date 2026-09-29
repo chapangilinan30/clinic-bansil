@@ -60,13 +60,19 @@ class DashboardController extends Controller
             $queue = Appointment::with(['doctor', 'user'])
                 ->where('doctor_id', $activeAppointment->doctor_id)
                 ->where('appointment_date', $activeAppointment->appointment_date)
+                ->orderBy('appointment_time', 'asc')
                 ->orderBy('queue_number', 'asc')
                 ->get();
 
             $nowServing = $queue->first(fn($i) => in_array(strtolower($i->status), ['in_progress', 'called', 'serving']));
 
-            $aheadCount = $queue->filter(function($i) use ($activeAppointment) {
-                return $i->queue_number < ($activeAppointment->queue_number ?? 0) 
+            $activeAppointmentTime = \Carbon\Carbon::parse($activeAppointment->appointment_time)->format('H:i:s');
+            $aheadCount = $queue->filter(function($i) use ($activeAppointment, $activeAppointmentTime) {
+                $itemTime = \Carbon\Carbon::parse($i->appointment_time)->format('H:i:s');
+                $isEarlierInQueue = $itemTime < $activeAppointmentTime
+                    || ($itemTime === $activeAppointmentTime && $i->queue_number < $activeAppointment->queue_number);
+
+                return $isEarlierInQueue
                     && in_array(strtolower($i->status), ['pending', 'checked-in']);
             })->count();
 

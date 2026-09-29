@@ -89,6 +89,7 @@ class DoctorAppointmentController extends Controller
     {
         $appointments = Appointment::where('doctor_id', auth()->id())
             ->whereDate('appointment_date', today())
+            ->orderBy('appointment_time', 'asc')
             ->orderBy('queue_number', 'asc')
             ->get();
 

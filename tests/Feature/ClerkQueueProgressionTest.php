@@ -6,7 +6,7 @@ use App\Notifications\AppointmentStatusNotification;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
 
-it('disables the start button for checked-in patients who are not next in queue', function () {
+it('orders the clerk queue by appointment time instead of booking order', function () {
     $clerk = User::factory()->create(['role' => 'clerk']);
     $doctor = User::factory()->create(['role' => 'doctor']);
     $today = now('Asia/Manila')->toDateString();
@@ -18,15 +18,15 @@ it('disables the start button for checked-in patients who are not next in queue'
         'appointment_date' => $today,
     ];
 
-    Appointment::create($common + [
-        'appointment_time' => '09:00',
+    $bookedFirst = Appointment::create($common + [
+        'appointment_time' => '07:00',
         'queue_number' => 1,
         'patient_name' => 'Patient 1',
         'status' => 'checked-in',
     ]);
 
-    Appointment::create($common + [
-        'appointment_time' => '09:30',
+    $bookedSecond = Appointment::create($common + [
+        'appointment_time' => '06:00',
         'queue_number' => 2,
         'patient_name' => 'Patient 2',
         'status' => 'checked-in',
@@ -37,46 +37,54 @@ it('disables the start button for checked-in patients who are not next in queue'
         ->assertOk()
         ->assertSee('Patient 1')
         ->assertSee('Patient 2')
-        ->assertSee('disabled', false);
+        ->assertViewHas('queue', function ($queue) use ($bookedFirst, $bookedSecond) {
+            return $queue->pluck('id')->all() === [$bookedSecond->id, $bookedFirst->id];
+        });
 });
 
-it('locks the next patient while an earlier appointment is unfinished', function () {
+it('allows the earlier appointment time to start even when booked second', function () {
     $clerk = User::factory()->create(['role' => 'clerk']);
+    $doctor = User::factory()->create(['role' => 'doctor']);
     $common = [
-        'doctor_id' => 'doctor-1',
-        'doctor_name' => 'Dr. One',
+        'doctor_id' => $doctor->id,
+        'doctor_name' => $doctor->name,
         'department' => 'General',
         'appointment_date' => '2026-09-28',
     ];
 
-    Appointment::create($common + [
-        'appointment_time' => '09:00',
+    $bookedFirst = Appointment::create($common + [
+        'appointment_time' => '07:00',
         'queue_number' => 1,
         'patient_name' => 'Patient 1',
         'status' => 'pending',
     ]);
-    $patientTwo = Appointment::create($common + [
-        'appointment_time' => '09:30',
+    $bookedSecond = Appointment::create($common + [
+        'appointment_time' => '06:00',
         'queue_number' => 2,
         'patient_name' => 'Patient 2',
-        'status' => 'pending',
+        'status' => 'checked-in',
     ]);
 
-    $message = "Patient 2 is currently locked. Please complete Patient 1 or update Patient 1's status to No-Show or Cancelled before proceeding.";
+    $message = 'This appointment is waiting for an earlier appointment time to be completed, cancelled, or marked as no-show.';
 
     $this->actingAs($clerk)
-        ->patch(route('clerk.appointments.update-status', $patientTwo), ['status' => 'checked-in'])
-        ->assertSessionHas('error', $message);
-
-    expect($patientTwo->fresh()->status)->toBe('pending');
-
-    Appointment::where('queue_number', 1)->update(['status' => 'no-show']);
-
-    $this->actingAs($clerk)
-        ->patch(route('clerk.appointments.update-status', $patientTwo), ['status' => 'checked-in'])
+        ->patch(route('clerk.appointments.update-status', $bookedSecond), ['status' => 'called'])
         ->assertSessionHasNoErrors();
 
-    expect($patientTwo->fresh()->status)->toBe('checked-in');
+    expect($bookedSecond->fresh()->status)->toBe('called');
+
+    $this->patch(route('clerk.appointments.update-status', $bookedFirst), ['status' => 'called'])
+        ->assertSessionHas('error', $message);
+
+    expect($bookedFirst->fresh()->status)->toBe('pending');
+
+    $bookedSecond->update(['status' => 'no-show']);
+
+    $this->actingAs($clerk)
+        ->patch(route('clerk.appointments.update-status', $bookedFirst), ['status' => 'called'])
+        ->assertSessionHasNoErrors();
+
+    expect($bookedFirst->fresh()->status)->toBe('called');
 });
 
 it('sends a readable notification when an overdue appointment becomes a no-show', function () {

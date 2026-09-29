@@ -341,6 +341,9 @@
                                         <span class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                                             <i class="fa-solid fa-list-ol"></i> Live Patient Queue
                                         </span>
+                                        <span class="text-[9px] font-black uppercase tracking-wider text-[#005596] bg-[#E8F4FB] border border-[#BFDDF0] rounded-md px-2 py-1">
+                                            Earliest appointment first
+                                        </span>
                                         <a href="{{ route('clerk.appointments.cancel.view',['date'=>$selectedDate]) }}"
                                            class="text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg transition self-start sm:self-auto">
                                             <i class="fa-solid fa-calendar-xmark mr-1"></i> Cancel Appointment
@@ -371,14 +374,21 @@
                                             @endphp
                                             <div class="queue-item flex items-center justify-between p-3 rounded-lg border-2 {{ $config['border'] }} shadow-sm transition-all duration-200" data-doctor-name="{{ $item->doctor->name ?? $item->doctor_name }}">
                                                 <div class="flex items-center gap-3">
-                                                    <div class="w-10 h-10 {{ $config['num'] }} rounded-md flex shrink-0 items-center justify-center font-black text-lg shadow-inner border border-black/5">
+                                                    <div class="flex shrink-0 flex-col items-center gap-1">
+                                                        <span class="text-[8px] font-black uppercase tracking-wider text-slate-400">Ticket</span>
+                                                        <div class="w-10 h-10 {{ $config['num'] }} rounded-md flex items-center justify-center font-black text-lg shadow-inner border border-black/5">
                                                         {{ $item->queue_number }}
+                                                        </div>
                                                     </div>
                                                     <div class="min-w-0">
                                                         <span class="text-xs sm:text-sm font-bold text-slate-700 capitalize truncate block">{{ $item->patient_name ?? 'Guest Patient' }}</span>
-                                                        <p class="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight truncate">
-                                                            {{ $item->appointment_time }} <span class="mx-0.5 text-slate-200">•</span> <span class="text-[#0992C2]">{{ $item->doctor->name ?? $item->doctor_name }}</span>
-                                                        </p>
+                                                        <div class="mt-1.5 flex flex-wrap items-center gap-2">
+                                                            <span class="inline-flex items-center gap-1.5 rounded-md border border-[#BFDDF0] bg-[#E8F4FB] px-2 py-1 text-xs sm:text-sm font-black text-[#005596] whitespace-nowrap">
+                                                                <i class="fa-regular fa-clock text-[11px]"></i>
+                                                                {{ \Carbon\Carbon::parse($item->appointment_time)->format('g:i A') }}
+                                                            </span>
+                                                            <span class="text-[10px] sm:text-[11px] text-[#0992C2] font-bold truncate">{{ $item->doctor->name ?? $item->doctor_name }}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="shrink-0 pl-1">
