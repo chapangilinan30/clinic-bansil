@@ -5,7 +5,7 @@
 
 
 {{-- Dashboard Statistics Cards --}}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 font-['Karma']" style="font-family: 'Karma', serif;">
+<div id="doctor-queue-stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 font-['Karma']" style="font-family: 'Karma', serif;">
 
     <!-- Card 1 -->
     <div class="bg-[#BFDDF0] p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300 flex items-center justify-between">
@@ -42,7 +42,7 @@
 </div>
 
 {{-- Modern Today's Appointments Table Container --}}
-<div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden font-['Karma']" style="font-family: 'Karma', serif;">
+<div id="doctor-appointment-pipeline" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden font-['Karma']" style="font-family: 'Karma', serif;">
     
     <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
         <h3 class="font-bold text-[#003366] text-lg">Today's Patient Pipeline</h3>
@@ -139,5 +139,32 @@
     </div>
 
 </div>
+
+<script>
+async function refreshDoctorAppointments() {
+    if (document.hidden) return;
+
+    try {
+        const response = await fetch(window.location.href, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            cache: 'no-store'
+        });
+        if (!response.ok) return;
+
+        const refreshedDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+        ['#doctor-queue-stats', '#doctor-appointment-pipeline'].forEach(function (selector) {
+            const currentSection = document.querySelector(selector);
+            const refreshedSection = refreshedDocument.querySelector(selector);
+            if (currentSection && refreshedSection) {
+                currentSection.innerHTML = refreshedSection.innerHTML;
+            }
+        });
+    } catch (error) {
+        console.error('Doctor appointment refresh failed:', error);
+    }
+}
+
+setInterval(refreshDoctorAppointments, 5000);
+</script>
 
 @endsection

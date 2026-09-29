@@ -193,6 +193,7 @@
                         </div>
                     @endif
 
+                    <div id="clerk-check-in-alerts">
                     @if($checkInDueAppointments->isNotEmpty())
                         <section role="alert" aria-live="polite" class="mb-4 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 shadow-sm sm:p-5">
                             <div class="mb-3 flex items-center gap-2 text-amber-900">
@@ -223,6 +224,7 @@
                             </div>
                         </section>
                     @endif
+                    </div>
 
                     <div class="grid grid-cols-12 gap-4 sm:gap-6">
 
@@ -279,7 +281,7 @@
                             {{-- TOTAL TODAY CARDS --}}
                             @php $noShows = $queue->where('status', 'no-show')->count(); @endphp
                             <div :class="activeTab === 'monitor-totals' ? 'grid' : 'hidden md:grid'" 
-                                 class="grid-cols-2 md:grid-cols-4 gap-3">
+                                   id="clerk-queue-stats" class="grid-cols-2 md:grid-cols-4 gap-3">
                                 <div class="bg-[#BFDDF0] py-4 px-3 rounded-xl border border-slate-100 shadow-sm text-center">
                                     <p class="text-[10px] font-bold text-[#0B2D72] uppercase tracking-wider mb-1">Total Today</p>
                                     <p class="text-2xl font-black text-[#003366]">{{ $totalToday }}</p>
@@ -303,10 +305,14 @@
                                 $nowServingItem = $queue->first(fn($i) => in_array(strtolower($i->status), ['in-progress', 'called']));
                                 $nowServingNumber = $nowServingItem ? $nowServingItem->queue_number : '--';
                                 $nowServingDoctor = $nowServingItem ? ($nowServingItem->doctor->name ?? $nowServingItem->doctor_name ?? 'N/A') : 'None';
+                                $nowServingPatient = $nowServingItem?->patient_name ?? 'No patient';
+                                $nowServingTime = $nowServingItem ? \Carbon\Carbon::parse($nowServingItem->appointment_time)->format('g:i A') : null;
 
                                 $nextItem = $queue->first(fn($i) => in_array(strtolower($i->status), ['checked-in', 'pending', 'booked']));
                                 $nextNumber = $nextItem ? $nextItem->queue_number : '--';
                                 $nextDoctor = $nextItem ? ($nextItem->doctor->name ?? $nextItem->doctor_name ?? 'N/A') : 'None';
+                                $nextPatient = $nextItem?->patient_name ?? 'No patient';
+                                $nextTime = $nextItem ? \Carbon\Carbon::parse($nextItem->appointment_time)->format('g:i A') : null;
 
                                 $waitingCount = $queue->filter(fn($i) => in_array(strtolower($i->status), ['checked-in', 'pending', 'booked']))->count();
                             @endphp
@@ -332,10 +338,12 @@
                                     
                                     {{-- NOW SERVING --}}
                                     <div class="bg-white/60 p-3 sm:p-4 rounded-xl border border-[#003366]/10 text-center flex flex-col justify-center items-center shadow-sm">
-                                        <p class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#003366]/70">NOW SERVING</p>
+                                        <p class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#003366]/70">NOW SERVING · TICKET #</p>
                                         <p class="text-4xl sm:text-5xl md:text-6xl font-black text-[#003366] my-1 tracking-tight">
                                             {{ $nowServingNumber }}
                                         </p>
+                                        <p class="rounded-md bg-white/80 px-2.5 py-1 text-sm font-black text-[#005596]">{{ $nowServingTime ?? 'No active appointment' }}</p>
+                                        <p class="mt-1 text-[10px] sm:text-xs font-semibold text-slate-700 truncate max-w-full">{{ $nowServingPatient }}</p>
                                         <p class="text-[10px] sm:text-xs font-semibold text-[#0992C2] truncate max-w-full">
                                             <i class="fa-solid fa-user-doctor text-[9px] mr-1"></i> {{ $nowServingDoctor }}
                                         </p>
@@ -343,10 +351,12 @@
 
                                     {{-- NEXT IN LINE --}}
                                     <div class="bg-white/40 p-3 sm:p-4 rounded-xl border border-[#003366]/10 text-center flex flex-col justify-center items-center shadow-sm">
-                                        <p class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#003366]/70">NEXT IN LINE</p>
+                                        <p class="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#003366]/70">NEXT IN LINE · TICKET #</p>
                                         <p class="text-4xl sm:text-5xl md:text-6xl font-black text-[#003366]/80 my-1 tracking-tight">
                                             {{ $nextNumber }}
                                         </p>
+                                        <p class="rounded-md bg-white/80 px-2.5 py-1 text-sm font-black text-[#005596]">{{ $nextTime ?? 'No next appointment' }}</p>
+                                        <p class="mt-1 text-[10px] sm:text-xs font-semibold text-slate-700 truncate max-w-full">{{ $nextPatient }}</p>
                                         <p class="text-[10px] sm:text-xs font-semibold text-slate-500 truncate max-w-full">
                                             <i class="fa-solid fa-user-doctor text-[9px] mr-1"></i> {{ $nextDoctor }}
                                         </p>
@@ -374,7 +384,7 @@
                                             <i class="fa-solid fa-list-ol"></i> Live Patient Queue
                                         </span>
                                         <span class="text-[9px] font-black uppercase tracking-wider text-[#005596] bg-[#E8F4FB] border border-[#BFDDF0] rounded-md px-2 py-1">
-                                            Earliest appointment first
+                                            By appointment time · Ticket numbers stay the same
                                         </span>
                                         <a href="{{ route('clerk.appointments.cancel.view',['date'=>$selectedDate]) }}"
                                            class="text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg transition self-start sm:self-auto">
@@ -407,7 +417,7 @@
                                             <div class="queue-item flex items-center justify-between p-3 rounded-lg border-2 {{ $config['border'] }} shadow-sm transition-all duration-200" data-doctor-name="{{ $item->doctor->name ?? $item->doctor_name }}">
                                                 <div class="flex items-center gap-3">
                                                     <div class="flex shrink-0 flex-col items-center gap-1">
-                                                        <span class="text-[8px] font-black uppercase tracking-wider text-slate-400">Ticket</span>
+                                                        <span class="text-[8px] font-black uppercase tracking-wider text-slate-400">Ticket #</span>
                                                         <div class="w-10 h-10 {{ $config['num'] }} rounded-md flex items-center justify-center font-black text-lg shadow-inner border border-black/5">
                                                         {{ $item->queue_number }}
                                                         </div>
@@ -480,16 +490,49 @@
     </div>
 
 <script>
+let selectedQueueDoctor = 'all';
+
+async function refreshClerkQueue() {
+    if (document.hidden) return;
+
+    try {
+        const response = await fetch(window.location.href, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            cache: 'no-store'
+        });
+        if (!response.ok) return;
+
+        const refreshedDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+        ['#clerk-check-in-alerts', '#clerk-queue-stats', '#queue-box', '#queue-list'].forEach(function (selector) {
+            const currentSection = document.querySelector(selector);
+            const refreshedSection = refreshedDocument.querySelector(selector);
+            if (currentSection && refreshedSection) {
+                currentSection.innerHTML = refreshedSection.innerHTML;
+            }
+        });
+
+        if (selectedQueueDoctor !== 'all') {
+            filterQueueByDoctor(selectedQueueDoctor);
+        }
+    } catch (error) {
+        console.error('Clerk queue refresh failed:', error);
+    }
+}
+
 function filterQueueByDoctor(doctorName) {
+    selectedQueueDoctor = doctorName;
     const queueItems = document.querySelectorAll('#queue-list .queue-item');
     queueItems.forEach(item => {
         item.style.display = (item.dataset.doctorName === doctorName) ? 'flex' : 'none';
     });
 }
 function showAllQueue() {
+    selectedQueueDoctor = 'all';
     const queueItems = document.querySelectorAll('#queue-list .queue-item');
     queueItems.forEach(item => item.style.display = 'flex');
 }
+
+setInterval(refreshClerkQueue, 5000);
 </script>
 </body>
 </html>

@@ -205,6 +205,7 @@
                     @endif
                 </div>
 
+                <div id="patient-check-in-alert">
                 @if(($checkInWindowOpen ?? false) && isset($activeAppointment) && $activeAppointment)
                     <section role="alert" aria-live="polite" class="mb-4 rounded-xl border-2 border-amber-300 bg-amber-50 p-4 shadow-sm sm:p-5 font-karma">
                         <div class="flex items-start gap-3">
@@ -224,8 +225,10 @@
                         </div>
                     </section>
                 @endif
+                </div>
 
                 {{-- ACTIVE APPOINTMENT CARD --}}
+                <div id="patient-active-appointment">
                 @if(isset($activeAppointment) && $activeAppointment)
                 <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-[#1F6F8B] border-y border-r border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 font-karma">
                     <div class="space-y-1.5">
@@ -251,6 +254,7 @@
                     </div>
                 </div>
                 @endif
+                </div>
 
                 {{-- LIVE QUEUE MONITOR & PERSONAL TICKET INTEGRATION --}}
                 @php
@@ -304,10 +308,13 @@
                         
                         {{-- NOW SERVING --}}
                         <div class="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 p-4 rounded-xl border border-blue-100/60 text-center flex flex-col justify-center items-center shadow-sm">
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-[#1F6F8B]">Now Serving</p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-[#1F6F8B]">Now Serving · Ticket #</p>
                             <p class="text-2xl font-black text-[#003366] my-1.5 tracking-tight truncate max-w-full">
                                 {{ $nowServingNumber }}
                             </p>
+                            @if($nowServingItem)
+                                <p class="rounded-md bg-white px-2.5 py-1 text-xs font-black text-[#005596]">{{ \Carbon\Carbon::parse($nowServingItem->appointment_time)->format('g:i A') }}</p>
+                            @endif
                             <p class="text-xs font-semibold text-slate-600 truncate max-w-full">
                                 <i class="fa-solid fa-user-doctor text-[#1F6F8B] text-[10px] mr-1"></i> {{ $nowServingDoctor }}
                             </p>
@@ -315,10 +322,13 @@
 
                         {{-- NEXT IN LINE --}}
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/60 text-center flex flex-col justify-center items-center shadow-sm">
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Next In Line</p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Next In Line · Ticket #</p>
                             <p class="text-4xl font-black text-slate-700 my-1.5 tracking-tight">
                                 {{ $nextNumber }}
                             </p>
+                            @if($nextItem)
+                                <p class="rounded-md bg-white px-2.5 py-1 text-xs font-black text-[#005596]">{{ \Carbon\Carbon::parse($nextItem->appointment_time)->format('g:i A') }}</p>
+                            @endif
                             <p class="text-xs font-semibold text-slate-500 truncate max-w-full">
                                 <i class="fa-solid fa-user-doctor text-slate-400 text-[10px] mr-1"></i> {{ $nextDoctor }}
                             </p>
@@ -337,7 +347,7 @@
 
                         {{-- YOUR STABLE BOOKING TICKET --}}
                         <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200/70 text-center flex flex-col justify-center items-center shadow-sm">
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-800">My Queue Ticket</p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-800">My Ticket #</p>
                             <p class="text-4xl font-black text-emerald-900 my-1.5 tracking-tight">
                                 {{ $userTicketNumber }}
                             </p>
@@ -380,6 +390,7 @@
                             Clinica Bansil Queue System
                         </span>
                     </div>
+                    <p class="mt-2 text-center text-[10px] font-semibold text-slate-500">Patients are called by appointment time. Ticket numbers stay the same.</p>
                 </div>
 
             </div>
@@ -508,23 +519,29 @@
 
 {{-- ================= AUTO REFRESH QUEUE ================= --}}
 <script>
-function refreshQueue() {
-    fetch(window.location.href, {
+async function refreshQueue() {
+    if (document.hidden) return;
+
+    try {
+        const response = await fetch(window.location.href, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(res => res.text())
-    .then(html => {
-        let doc = new DOMParser().parseFromString(html, 'text/html');
-        let newQueue = doc.querySelector("#queue-box");
-        let currentQueue = document.querySelector("#queue-box");
+        },
+        cache: 'no-store'
+        });
+        if (!response.ok) return;
 
-        if (newQueue && currentQueue) {
-            currentQueue.innerHTML = newQueue.innerHTML;
-        }
-    })
-    .catch(err => console.error('Queue refresh failed:', err));
+        const refreshedDocument = new DOMParser().parseFromString(await response.text(), 'text/html');
+        ['#queue-box', '#patient-check-in-alert', '#patient-active-appointment'].forEach(function (selector) {
+            const currentSection = document.querySelector(selector);
+            const refreshedSection = refreshedDocument.querySelector(selector);
+            if (currentSection && refreshedSection) {
+                currentSection.innerHTML = refreshedSection.innerHTML;
+            }
+        });
+    } catch (error) {
+        console.error('Patient queue refresh failed:', error);
+    }
 }
 
 setInterval(refreshQueue, 5000);
