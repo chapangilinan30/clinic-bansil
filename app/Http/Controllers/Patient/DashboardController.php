@@ -25,7 +25,9 @@ class DashboardController extends Controller
         $activeAppointment = Appointment::with('doctor')
             ->where('user_id', $userId)
             ->whereIn('status', ['pending', 'booked', 'confirmed', 'checked-in', 'called', 'in_progress'])
-            ->latest()
+            ->orderBy('appointment_date', 'asc')
+            ->orderBy('appointment_time', 'asc')
+            ->orderBy('queue_number', 'asc')
             ->first();
 
         $hasActiveAppointment = $activeAppointment ? true : false;
@@ -75,7 +77,7 @@ class DashboardController extends Controller
                 ->orderBy('queue_number', 'asc')
                 ->get();
 
-            $nowServing = $queue->first(fn($i) => in_array(strtolower($i->status), ['in_progress', 'called', 'serving']));
+            $nowServing = $queue->first(fn($i) => in_array(str_replace('-', '_', strtolower($i->status)), ['in_progress', 'called', 'serving']));
 
             $activeAppointmentTime = \Carbon\Carbon::parse($activeAppointment->appointment_time)->format('H:i:s');
             $aheadCount = $queue->filter(function($i) use ($activeAppointment, $activeAppointmentTime) {
@@ -88,7 +90,7 @@ class DashboardController extends Controller
             })->count();
 
             $queueData = [
-                'now_serving_number' => $nowServing->queue_number ?? $activeAppointment->queue_number ?? '--',
+                'now_serving_number' => $nowServing->queue_number ?? '--',
                 'now_serving_name'   => $nowServing->user->name ?? $nowServing->patient_name ?? '--',
                 'your_ticket'        => $activeAppointment->queue_number ?? '--',
                 'ahead'              => $aheadCount,

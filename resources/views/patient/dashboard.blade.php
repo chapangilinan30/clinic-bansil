@@ -259,21 +259,21 @@
                 {{-- LIVE QUEUE MONITOR & PERSONAL TICKET INTEGRATION --}}
                 @php
     // Fetch active queue items dynamically
-    $nowServingItem = isset($queue) ? $queue->first(fn($i) => in_array(strtolower($i->status), ['in-progress', 'called', 'serving'])) : null;
+    $nowServingItem = isset($queue) ? $queue->first(fn($i) => in_array(str_replace('-', '_', strtolower($i->status)), ['in_progress', 'called', 'serving'])) : null;
     
     // Display the queue number or fallback to patient name/number correctly
-    $nowServingNumber = $nowServingItem ? ($nowServingItem->queue_number ?? $nowServingItem->patient->name ?? 'N/A') : ($queueData['now_serving_number'] ?? '--');
+    $nowServingNumber = $nowServingItem ? $nowServingItem->queue_number : '--';
     $nowServingDoctor = $nowServingItem ? ($nowServingItem->doctor->name ?? $nowServingItem->doctor_name ?? 'N/A') : 'None';
 
-    $nextItem = isset($queue) ? $queue->first(fn($i) => in_array(strtolower($i->status), ['checked-in', 'pending', 'booked'])) : null;
+    $nextItem = isset($queue) ? $queue->first(fn($i) => in_array(str_replace('-', '_', strtolower($i->status)), ['checked_in', 'pending', 'booked'])) : null;
     $nextNumber = $nextItem ? $nextItem->queue_number : ($queueData['next_number'] ?? '--');
     $nextDoctor = $nextItem ? ($nextItem->doctor->name ?? $nextItem->doctor_name ?? 'N/A') : 'None';
 
-    $waitingCount = isset($queue) ? $queue->filter(fn($i) => in_array(strtolower($i->status), ['checked-in', 'pending', 'booked']))->count() : ($queueData['ahead'] ?? 0);
+    $waitingCount = $queueData['ahead'] ?? 0;
 
-    $userQueueTicket = isset($queue) ? $queue->first(fn($i) => $i->user_id === auth()->id() && !in_array(strtolower($i->status), ['completed', 'cancelled', 'no_show', 'noshow'])) : null;
-    $userTicketNumber = $userQueueTicket ? $userQueueTicket->queue_number : (isset($activeAppointment) && $activeAppointment->queue_number ? $activeAppointment->queue_number : '--');
-    $userQueueStatus = $userQueueTicket ? strtoupper($userQueueTicket->status) : (isset($activeAppointment) ? strtoupper($activeAppointment->status) : 'NO TICKET');
+    $userQueueTicket = $activeAppointment ?? null;
+    $userTicketNumber = $userQueueTicket?->queue_number ?? '--';
+    $userQueueStatus = $userQueueTicket ? strtoupper($userQueueTicket->status) : 'NO TICKET';
 @endphp
 
                 <div id="queue-box" class="bg-white rounded-2xl p-5 sm:p-6 shadow-md border border-slate-200/60 font-karma mb-4 md:mb-6" x-data="{ monitorTab: 'all' }">
