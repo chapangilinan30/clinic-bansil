@@ -300,7 +300,7 @@
                     </div>
 
                     {{-- TAB 1: OVERVIEW --}}
-                    <div x-show="monitorTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div x-show="monitorTab === 'all'" x-transition.opacity class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                         
                         {{-- NOW SERVING --}}
                         <div class="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 p-4 rounded-xl border border-blue-100/60 text-center flex flex-col justify-center items-center shadow-sm">
@@ -333,6 +333,21 @@
                             <p class="text-xs font-semibold text-slate-500">
                                 <i class="fa-solid fa-users text-slate-400 text-[10px] mr-1"></i> Patients ahead
                             </p>
+                        </div>
+
+                        {{-- YOUR STABLE BOOKING TICKET --}}
+                        <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200/70 text-center flex flex-col justify-center items-center shadow-sm">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-800">My Queue Ticket</p>
+                            <p class="text-4xl font-black text-emerald-900 my-1.5 tracking-tight">
+                                {{ $userTicketNumber }}
+                            </p>
+                            @if(isset($activeAppointment) && $activeAppointment)
+                                <p class="text-xs font-semibold text-emerald-800">
+                                    Appointment: {{ \Carbon\Carbon::parse($activeAppointment->appointment_time)->format('g:i A') }}
+                                </p>
+                            @else
+                                <p class="text-xs font-semibold text-emerald-800">No active ticket</p>
+                            @endif
                         </div>
 
                     </div>
