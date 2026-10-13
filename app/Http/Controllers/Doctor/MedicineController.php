@@ -8,10 +8,12 @@ use App\Models\Medicine;
 
 class MedicineController extends Controller
 {
-    // Show all medicines
-    public function index()
+     public function index()
     {
-        $medicines = Medicine::orderBy('name')->get();
+        $medicines = Medicine::orderBy('category')
+            ->orderBy('name')
+            ->get();
+
         return view('doctor.medicines.index', compact('medicines'));
     }
 
@@ -20,10 +22,12 @@ class MedicineController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:medicines,name',
+            'category' => 'required|in:Cough,Cold and Flu,Fever,Pain Relief,Allergy,Antibiotics,Digestive Health,Other',
         ]);
 
         Medicine::create([
             'name' => $request->name,
+            'category' => $request->category,
         ]);
 
         return back()->with('success', 'Medicine added successfully.');
