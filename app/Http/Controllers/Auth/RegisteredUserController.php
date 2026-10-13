@@ -38,6 +38,7 @@ class RegisteredUserController extends Controller
             'contact'   => ['required', 'string', 'max:20'],
             'address'   => ['required', 'string', 'max:500'],
             'password'  => ['required', 'confirmed', Rules\Password::defaults()],
+            'terms'     => ['accepted'],
         ]);
 
         // 1. Create the User (Only fields that actually exist in the 'users' table)
@@ -69,6 +70,6 @@ Patient::create([
         // Auth::login($user);
 
         // 2. Redirect to the login page with a success message
-        return redirect()->route('login')->with('status', 'Registration successful! Please log in.');
+        return redirect()->route('login')->with('status', 'Registration successful. Sign in, then follow the email verification prompt to access patient features.');
     }
 }

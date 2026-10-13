@@ -1,3 +1,35 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+	button,
+	input[type="button"],
+	input[type="submit"],
+	input[type="reset"],
+	a[class*="rounded"][class*="px-"][class*="py-"] {
+		min-width: 0;
+		max-width: 100%;
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+
+	button:focus-visible,
+	input[type="button"]:focus-visible,
+	input[type="submit"]:focus-visible,
+	input[type="reset"]:focus-visible,
+	a[class*="rounded"][class*="px-"][class*="py-"]:focus-visible {
+		outline: 2px solid #1F6F8B;
+		outline-offset: 2px;
+	}
+
+	@media (max-width: 640px) {
+		button:not(.day-badge),
+		input[type="button"],
+		input[type="submit"],
+		input[type="reset"],
+		a[class*="rounded"][class*="px-"][class*="py-"] {
+			min-height: 44px;
+		}
+	}
+}

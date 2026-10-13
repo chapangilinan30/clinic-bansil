@@ -88,15 +88,17 @@ class BookingController extends Controller
     =============================== */
     public function stepSchedule(Request $request)
     {
-        if ($request->doctor_id) {
-            session(['booking.doctor_id' => $request->doctor_id]);
+        $doctorId = $request->input('doctor_id', session('booking.doctor_id'));
+
+        if ($doctorId) {
+            session(['booking.doctor_id' => $doctorId]);
         }
 
-        if (!session()->has('booking.doctor_id')) {
+        if (!$doctorId) {
             return redirect()->route('patient.booking.step2');
         }
 
-        return view('patient.booking.step3');
+        return view('patient.booking.step3', compact('doctorId'));
     }
 
     /* ===============================

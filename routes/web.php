@@ -202,7 +202,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | ADMIN DASHBOARD
     |--------------------------------------------------------------------------
     */
-    Route::prefix('admin')->name('admin.')->middleware(['role:admin,doctor,clerk,staff'])->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('users', UserController::class);
         Route::resource('services', ServiceController::class);

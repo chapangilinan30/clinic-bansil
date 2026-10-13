@@ -116,6 +116,22 @@
                         $oldInstructions = old('instructions', []);
                     @endphp
 
+                    <datalist id="dosage-suggestions">
+                        @foreach(['1 tablet', '2 tablets', '3 tablets', '1 capsule', '2 capsules', '2.5 mL', '5 mL', '10 mL', '1 puff', '2 puffs'] as $dosageSuggestion)
+                            <option value="{{ $dosageSuggestion }}">
+                        @endforeach
+                    </datalist>
+                    <datalist id="frequency-suggestions">
+                        @foreach(['Every 4 hours', 'Every 6 hours', 'Every 8 hours', 'Every 12 hours', 'Once a day', 'Twice a day', 'Three times a day', 'Before meals', 'After meals'] as $frequencySuggestion)
+                            <option value="{{ $frequencySuggestion }}">
+                        @endforeach
+                    </datalist>
+                    <datalist id="duration-suggestions">
+                        @foreach(['3 days', '5 days', '1 week', '2 weeks', '1 month', '2 months', '3 months', 'Maintenance'] as $durationSuggestion)
+                            <option value="{{ $durationSuggestion }}">
+                        @endforeach
+                    </datalist>
+
                     @foreach($oldMedicines as $i => $med)
                     <!-- Single Medicine Row -->
                     <div class="medicine-row border border-slate-200/80 p-5 md:p-6 rounded-xl bg-slate-50/30 relative transition-all duration-200">
@@ -150,34 +166,19 @@
                             {{-- Dosage --}}
                             <div>
                                 <label class="block mb-2 text-xs font-bold text-[#7794a3] uppercase tracking-wider">Dosage</label>
-                                <select name="dosage[]" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-sans text-[#003366] focus:border-[#0992C2] focus:ring-4 focus:ring-[#0992C2]/15 focus:outline-none transition-all" required>
-                                    <option value="">Select Dosage</option>
-                                    @foreach(['1 tablet','2 tablets','3 tablets','1 capsule','2 capsules','2.5 mL','5 mL','10 mL','1 puff','2 puffs'] as $dos)
-                                        <option value="{{ $dos }}" {{ ($oldDosage[$i] ?? '') == $dos ? 'selected' : '' }}>{{ $dos }}</option>
-                                    @endforeach
-                                </select>
+                                <input type="text" name="dosage[]" list="dosage-suggestions" value="{{ $oldDosage[$i] ?? '' }}" placeholder="Enter dosage" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-sans text-[#003366] focus:border-[#0992C2] focus:ring-4 focus:ring-[#0992C2]/15 focus:outline-none transition-all">
                             </div>
 
                             {{-- Frequency --}}
                             <div>
                                 <label class="block mb-2 text-xs font-bold text-[#7794a3] uppercase tracking-wider">Frequency</label>
-                                <select name="frequency[]" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-sans text-[#003366] focus:border-[#0992C2] focus:ring-4 focus:ring-[#0992C2]/15 focus:outline-none transition-all" required>
-                                    <option value="">Select Frequency</option>
-                                    @foreach(['Every 4 hours','Every 6 hours','Every 8 hours','Every 12 hours','Once a day','Twice a day','Three times a day','Before meals','After meals'] as $freq)
-                                        <option value="{{ $freq }}" {{ ($oldFrequency[$i] ?? '') == $freq ? 'selected' : '' }}>{{ $freq }}</option>
-                                    @endforeach
-                                </select>
+                                <input type="text" name="frequency[]" list="frequency-suggestions" value="{{ $oldFrequency[$i] ?? '' }}" placeholder="Enter frequency" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-sans text-[#003366] focus:border-[#0992C2] focus:ring-4 focus:ring-[#0992C2]/15 focus:outline-none transition-all">
                             </div>
 
                             {{-- Duration --}}
                             <div>
                                 <label class="block mb-2 text-xs font-bold text-[#7794a3] uppercase tracking-wider">Duration</label>
-                                <select name="duration[]" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-sans text-[#003366] focus:border-[#0992C2] focus:ring-4 focus:ring-[#0992C2]/15 focus:outline-none transition-all" required>
-                                    <option value="">Select Duration</option>
-                                    @foreach(['3 days','5 days','1 week','2 weeks','1 month','2 months','3 months','Maintenance'] as $dur)
-                                        <option value="{{ $dur }}" {{ ($oldDuration[$i] ?? '') == $dur ? 'selected' : '' }}>{{ $dur }}</option>
-                                    @endforeach
-                                </select>
+                                <input type="text" name="duration[]" list="duration-suggestions" value="{{ $oldDuration[$i] ?? '' }}" placeholder="Enter duration" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-sans text-[#003366] focus:border-[#0992C2] focus:ring-4 focus:ring-[#0992C2]/15 focus:outline-none transition-all">
                             </div>
 
                             {{-- Instructions --}}

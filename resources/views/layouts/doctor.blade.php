@@ -70,7 +70,7 @@
                             ];
                         @endphp
                         @foreach($desktopLinks as $link)
-                            <a href="{{ route($link['route']) }}" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs($link['route']) ? 'bg-white brand-text-blue shadow-md font-semibold' : 'text-blue-100 hover:bg-white/10' }}">
+                            <a href="{{ route($link['route']) }}" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs($link['route'].'*') ? 'bg-white brand-text-blue shadow-md font-semibold' : 'text-blue-100 hover:bg-white/10' }}">
                                 <i class="{{ $link['icon'] }} text-base"></i> <span>{{ $link['label'] }}</span>
                             </a>
                         @endforeach
@@ -85,19 +85,27 @@
                     @endif
                     </div>
 
-                    <!-- MOBILE LINKS (Dashboard and Schedule only, Patients removed) -->
+                    <!-- MOBILE LINKS -->
                     <div class="md:hidden space-y-1.5">
                         @php
                             $mobileLinks = [
                                 ['route' => 'doctor.dashboard', 'icon' => 'fa-gauge', 'label' => 'Dashboard'],
+                                ['route' => 'doctor.prescriptions.create', 'icon' => 'fa-file-medical', 'label' => 'Prescriptions'],
+                                ['route' => 'doctor.medicines.index', 'icon' => 'fa-capsules', 'label' => 'Medicines'],
+                                ['route' => 'doctor.patients.index', 'icon' => 'fa-user', 'label' => 'Patients'],
                                 ['route' => 'doctor.schedules.index', 'icon' => 'fa-regular fa-calendar-plus', 'label' => 'Schedule'],
                             ];
                         @endphp
                         @foreach($mobileLinks as $link)
-                            <a href="{{ route($link['route']) }}" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs($link['route']) ? 'bg-white brand-text-blue shadow-md font-semibold' : 'text-blue-100 hover:bg-white/10' }}">
+                            <a href="{{ route($link['route']) }}" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs($link['route'].'*') ? 'bg-white brand-text-blue shadow-md font-semibold' : 'text-blue-100 hover:bg-white/10' }}">
                                 <i class="{{ $link['icon'] }} text-base"></i> <span>{{ $link['label'] }}</span>
                             </a>
                         @endforeach
+                        @if(Auth::user()->is_admin ?? false)
+                            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-white/10 transition-all duration-200">
+                                <i class="fa-solid fa-user-shield text-base"></i> <span>Admin Mode</span>
+                            </a>
+                        @endif
                     </div>
                 </nav>
             </div>
@@ -130,7 +138,7 @@
             <header class="brand-header bg-white px-4 md:px-8 py-5 flex justify-between items-center shrink-0 border-b border-slate-200/40 shadow-sm font-['Karma']" style="font-family: 'Karma', serif;">
                 <div class="flex items-center gap-3">
                     <!-- Mobile Hamburger Toggle -->
-                    <button @click="mobileSidebarOpen = !mobileSidebarOpen" class="md:hidden text-slate-700 hover:text-[#1F6F8B] focus:outline-none mr-1">
+                    <button @click="mobileSidebarOpen = !mobileSidebarOpen" aria-label="Toggle doctor navigation" :aria-expanded="mobileSidebarOpen.toString()" class="md:hidden text-slate-700 hover:text-[#1F6F8B] focus:outline-none focus:ring-2 focus:ring-[#1F6F8B] mr-1">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <div>

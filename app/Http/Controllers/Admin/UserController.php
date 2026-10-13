@@ -24,23 +24,23 @@ class UserController extends Controller
     =================================================== */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required',
-            'role' => 'required'
+            'password' => 'required|string',
+            'role' => 'required|in:admin,doctor,clerk,staff',
         ]);
 
         User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'role' => $request->role,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+            'role' => $validated['role'],
             
             // Auto-verify lahat ng ililikha sa Admin side (Doctors, Clerks, Admins, Staff)
             'email_verified_at' => now(),
 
-            'specialization' => $request->role === 'doctor'
+            'specialization' => $validated['role'] === 'doctor'
                 ? $request->specialization
                 : null
         ]);
@@ -61,29 +61,33 @@ class UserController extends Controller
     =================================================== */
     public function update(Request $request, User $user)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email',
-            'role' => 'required'
+            'role' => 'required|in:admin,doctor,clerk,staff',
+            'is_admin' => 'sometimes|boolean',
         ]);
 
+        $previousIsAdmin = (bool) $user->is_admin;
+        $newIsAdmin = $request->has('is_admin')
+            ? $request->boolean('is_admin')
+            : $previousIsAdmin;
+
         // Siguraduhin ding manatiling verified ang admin/doctor/clerk/staff kung sakaling ma-edit
-        $isStaffOrDoctor = in_array($request->role, ['admin', 'doctor', 'clerk', 'staff']);
+        $isStaffOrDoctor = in_array($validated['role'], ['admin', 'doctor', 'clerk', 'staff']);
         
         $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => $request->role,
-            
-            // Dito idinagdag ang logic para sa checkbox
-            'is_admin' => $request->has('is_admin') ? 1 : 0,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'role' => $validated['role'],
+            'is_admin' => $newIsAdmin,
 
             // Kunin ang lumang email_verified_at O i-set na verified kung staff/doctor account sila
             'email_verified_at' => $isStaffOrDoctor 
                 ? ($user->email_verified_at ?? now()) 
                 : $user->email_verified_at,
 
-            'specialization' => $request->role === 'doctor'
+            'specialization' => $validated['role'] === 'doctor'
                 ? $request->specialization
                 : null
         ]);
@@ -104,4 +108,5 @@ class UserController extends Controller
             ->route('admin.users.index')
             ->with('success', 'User Deleted Successfully');
     }
+
 }

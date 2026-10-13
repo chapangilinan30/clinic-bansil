@@ -18,9 +18,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-    <!-- AlpineJS -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <style>
         body { font-family: 'Inter', sans-serif; }
         .brand-sidebar-teal { background-color: #1F6F8B; }
@@ -258,7 +255,7 @@
 </div>
 
 <script>
-    const doctorId = @json(session('booking.doctor_id'));
+    const doctorId = @json($doctorId);
     const timeslots = document.getElementById('timeslots');
     const submitBtn = document.getElementById('submitBtn');
     const selectedTime = document.getElementById('selected_time');

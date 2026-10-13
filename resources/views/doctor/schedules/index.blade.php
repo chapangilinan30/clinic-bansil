@@ -22,11 +22,13 @@
                 Add Schedule
             </a>
 
-            <a href="{{ route('doctor.schedules.show-cancel', $schedules->first()?->id ?? 18) }}" 
+            @if($schedules->isNotEmpty())
+            <a href="{{ route('doctor.schedules.show-cancel', $schedules->first()->id) }}"
                class="inline-flex items-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl border border-rose-200/60 transition-all active:scale-95 shadow-xs">
                 <i class="fa-solid fa-calendar-xmark text-xs"></i>
                 Cancel Appointment
             </a>
+            @endif
         </div>
     </div>
 
@@ -51,7 +53,7 @@
             </span>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="hidden overflow-x-auto md:block">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="border-b border-slate-100 text-[#7794a3] text-[10px] font-bold uppercase tracking-wider bg-slate-50/50">
@@ -118,6 +120,27 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        <div class="space-y-3 p-4 md:hidden">
+            @forelse($schedules as $schedule)
+                <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500">{{ $schedule->day ? 'Weekly recurring' : 'Specific date' }}</p>
+                            <h4 class="mt-1 text-sm font-bold text-[#003366]">
+                                {{ $schedule->day ?? \Carbon\Carbon::parse($schedule->date)->format('D, M d, Y') }}
+                            </h4>
+                        </div>
+                        <span class="shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                            {{ \Carbon\Carbon::parse($schedule->start_time)->format('g:i A') }} – {{ \Carbon\Carbon::parse($schedule->end_time)->format('g:i A') }}
+                        </span>
+                    </div>
+                    <p class="mt-3 text-xs text-slate-500">20-minute appointment slots</p>
+                </article>
+            @empty
+                <p class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500">No schedules configured.</p>
+            @endforelse
         </div>
     </div>
 

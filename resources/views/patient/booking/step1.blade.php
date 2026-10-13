@@ -14,9 +14,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Karma:wght@300;400;500;600;700&family=Montserrat+Alternates:wght@500;600;700&display=swap" rel="stylesheet">
 
-    <!-- AlpineJS -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <style>
         body { font-family: 'Inter', sans-serif; }
         .brand-sidebar-teal { background-color: #1F6F8B; }
@@ -196,18 +193,20 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                             @foreach($departments as $department)
-                                <label class="cursor-pointer group">
+                                <label class="group flex cursor-pointer items-start gap-3">
                                     <input
                                         type="radio"
                                         name="department_id"
                                         value="{{ $department->id }}"
-                                        class="hidden peer"
+                                        @checked((string) session('booking.department_id') === (string) $department->id)
+                                        class="peer mt-1 h-5 w-5 shrink-0 accent-[#1F6F8B]"
                                         required
                                     >
 
                                     <div
-                                        class="border border-slate-200 rounded-2xl p-5 transition-all duration-200
+                                             class="min-w-0 flex-1 border border-slate-200 rounded-2xl p-5 transition-all duration-200
                                                hover:border-[#1F6F8B]
+                                                 peer-focus-visible:ring-2 peer-focus-visible:ring-[#1F6F8B] peer-focus-visible:ring-offset-2
                                                peer-checked:border-[#1F6F8B]
                                                peer-checked:bg-[#CBDCEB]/20 peer-checked:shadow-sm">
 
@@ -231,12 +230,6 @@
                                                 </p>
                                             </div>
 
-                                        </div>
-
-                                        <div class="mt-3 hidden peer-checked:block">
-                                            <span class="text-xs font-bold text-[#1F6F8B] flex items-center gap-1">
-                                                <i class="fa-solid fa-circle-check"></i> Selected
-                                            </span>
                                         </div>
 
                                     </div>

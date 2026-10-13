@@ -20,14 +20,6 @@ class RoleMiddleware
 
         $user = auth()->user();
 
-        // 2. ADMIN SUPERPOWER CHECK:
-        // Kung ang user ay may is_admin = true, pasok agad!
-        if ($user->is_admin) {
-            return $next($request);
-        }
-
-        // 3. ROLE CHECK:
-        // Kung hindi admin, titingnan natin kung match yung role nila sa required roles
         if (!in_array($user->role, $roles)) {
             abort(403, 'Unauthorized access.');
         }

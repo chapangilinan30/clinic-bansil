@@ -14,9 +14,6 @@
     <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-thin-straight/css/uicons-thin-straight.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -84,7 +81,7 @@
                 <p class="text-[11px] text-blue-100 uppercase tracking-widest mt-1 opacity-90">
                     Patient Account
                 </p>
-                <a href="#" class="inline-block mt-2 text-xs text-blue-200 hover:text-white font-semibold underline">
+                <a href="{{ route('profile.edit') }}" class="inline-block mt-2 text-xs text-blue-200 hover:text-white font-semibold underline">
                     Edit Profile
                 </a>
             </div>

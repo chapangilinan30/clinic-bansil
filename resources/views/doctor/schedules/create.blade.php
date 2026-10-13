@@ -17,7 +17,7 @@
       <div class="flex justify-between items-center mb-6">
         <div>
           <h3 class="text-lg font-semibold text-gray-800">Weekly Availability</h3>
-          <p class="text-xs text-gray-500">Create time blocks and apply them to multiple days of the week.</p>
+          <p class="text-xs text-gray-500">Create time blocks and apply them to multiple days of the week. Appointment slots use 20-minute intervals.</p>
         </div>
         <button type="button" onclick="addTimeBlock()" class="bg-indigo-50 border border-indigo-200 text-indigo-600 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-colors flex items-center gap-1">
           ➕ Add Block
@@ -49,9 +49,11 @@
               <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Applies to</label>
               <div class="flex flex-wrap gap-2">
                 @foreach(['Monday' => 'M', 'Tuesday' => 'T', 'Wednesday' => 'W', 'Thursday' => 'Th', 'Friday' => 'F', 'Saturday' => 'Sa', 'Sunday' => 'Su'] as $fullName => $shortName)
-                  <button type="button" 
+                    <button type="button"
+                      aria-label="{{ $fullName }}"
+                          aria-pressed="false"
                           onclick="toggleDayBadge(this, '{{ $fullName }}')" 
-                          class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 transition-all select-none">
+                      class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 transition-all select-none">
                     {{ $shortName }}
                   </button>
                 @endforeach
@@ -104,10 +106,12 @@
 function toggleDayBadge(button, dayName) {
     if (button.dataset.selected === "true") {
         button.dataset.selected = "false";
+      button.setAttribute('aria-pressed', 'false');
         button.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-sm');
         button.classList.add('bg-white', 'text-gray-600', 'border-gray-300');
     } else {
         button.dataset.selected = "true";
+      button.setAttribute('aria-pressed', 'true');
         button.dataset.day = dayName;
         button.classList.remove('bg-white', 'text-gray-600', 'border-gray-300');
         button.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600', 'shadow-sm');
@@ -137,13 +141,13 @@ function addTimeBlock() {
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Applies to</label>
           <div class="flex flex-wrap gap-2">
-            <button type="button" onclick="toggleDayBadge(this, 'Monday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 transition-all select-none">M</button>
-            <button type="button" onclick="toggleDayBadge(this, 'Tuesday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 transition-all select-none">T</button>
-            <button type="button" onclick="toggleDayBadge(this, 'Wednesday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 transition-all select-none">W</button>
-            <button type="button" onclick="toggleDayBadge(this, 'Thursday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 transition-all select-none">Th</button>
-            <button type="button" onclick="toggleDayBadge(this, 'Friday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 transition-all select-none">F</button>
-            <button type="button" onclick="toggleDayBadge(this, 'Saturday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 transition-all select-none">Sa</button>
-            <button type="button" onclick="toggleDayBadge(this, 'Sunday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 transition-all select-none">Su</button>
+            <button type="button" aria-label="Monday" aria-pressed="false" onclick="toggleDayBadge(this, 'Monday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 transition-all select-none">M</button>
+            <button type="button" aria-label="Tuesday" aria-pressed="false" onclick="toggleDayBadge(this, 'Tuesday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 transition-all select-none">T</button>
+            <button type="button" aria-label="Wednesday" aria-pressed="false" onclick="toggleDayBadge(this, 'Wednesday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 transition-all select-none">W</button>
+            <button type="button" aria-label="Thursday" aria-pressed="false" onclick="toggleDayBadge(this, 'Thursday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 transition-all select-none">Th</button>
+            <button type="button" aria-label="Friday" aria-pressed="false" onclick="toggleDayBadge(this, 'Friday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 transition-all select-none">F</button>
+            <button type="button" aria-label="Saturday" aria-pressed="false" onclick="toggleDayBadge(this, 'Saturday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 transition-all select-none">Sa</button>
+            <button type="button" aria-label="Sunday" aria-pressed="false" onclick="toggleDayBadge(this, 'Sunday')" class="day-badge w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 font-medium text-sm flex items-center justify-center hover:border-indigo-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 transition-all select-none">Su</button>
           </div>
         </div>
       </div>

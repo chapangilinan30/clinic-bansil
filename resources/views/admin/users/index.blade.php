@@ -269,8 +269,9 @@
 
                 <div class="pt-2">
                     <label class="inline-flex items-center gap-2 cursor-pointer">
+                        <input type="hidden" name="is_admin" value="0">
                         <input type="checkbox" name="is_admin" :checked="editUser.is_admin == 1" value="1" class="rounded border-slate-300 text-[#003366] focus:ring-[#003366]/20 w-4 h-4">
-                        <span class="text-xs font-semibold text-slate-700">Grant Super-Admin Privilege</span>
+                        <span class="text-xs font-semibold text-slate-700">Grant Admin Privilege</span>
                     </label>
                 </div>
 

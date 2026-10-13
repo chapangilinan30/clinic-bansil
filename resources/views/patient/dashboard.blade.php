@@ -14,8 +14,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Karma:wght@300;400;500;600;700&family=Montserrat+Alternates:wght@500;600;700&display=swap" rel="stylesheet">
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <style>
         [x-cloak] { display: none !important; }
         body { font-family: 'Inter', sans-serif; }
@@ -491,7 +489,7 @@
 
     {{-- ================= MOBILE BOTTOM NAVIGATION BAR ================= --}}
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 px-6 py-2.5 flex justify-around items-center z-40 shadow-lg font-karma">
-        <a href="#" class="flex flex-col items-center gap-0.5 text-[#1F6F8B]">
+        <a href="{{ route('patient.dashboard') }}" aria-current="page" class="flex flex-col items-center gap-0.5 text-[#1F6F8B]">
             <i class="fa-solid fa-chart-pie text-lg"></i>
             <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>
         </a>

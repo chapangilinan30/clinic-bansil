@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Clinica Bansil</title>
+    <title>Sign In - Clinica Bansil</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Karma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -16,15 +16,21 @@
         <div class="w-full max-w-lg bg-white/60 backdrop-blur-md rounded-3xl sm:rounded-[2.5rem] shadow-2xl p-6 sm:p-10 border border-white/20 my-auto">
             
             <div class="mb-6 text-center lg:text-left">
-                <h3 class="text-3xl sm:text-4xl font-bold text-[#1e4d6d] tracking-tight">Login</h3>
-                <p class="text-gray-600 text-xs sm:text-sm mt-2">Enter your credentials to access your account</p>
+                <h1 class="text-3xl sm:text-4xl font-bold text-[#1e4d6d] tracking-tight">Sign in</h1>
+                <p class="text-gray-600 text-sm mt-2">Access your Clinica Bansil patient account.</p>
             </div>
 
+            @if (session('status'))
+                <div role="status" class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                    {{ session('status') }}
+                </div>
+            @endif
+
             @if ($errors->any())
-                <div class="mb-4 p-4 bg-red-50/80 border-l-4 border-red-400 text-red-700 text-xs rounded-lg">
+                <div role="alert" class="mb-4 rounded-lg border-l-4 border-red-400 bg-red-50/80 p-4 text-sm text-red-700">
                     <ul>
                         @foreach ($errors->all() as $error)
-                            <li>• {{ $error }}</li>
+                            <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
@@ -33,52 +39,53 @@
             <form method="POST" action="{{ route('login') }}" class="space-y-4">
                 @csrf
 
-                <!-- Email Address -->
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 ml-4">Email Address:</label>
-                    <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                           class="w-full border-gray-200/85 rounded-2xl py-2.5 px-6 text-sm outline-none shadow-sm bg-white/70 focus:border-[#4a79f2] transition-all">
+                    <label for="loginEmail" class="mb-1.5 block text-sm font-semibold text-gray-700">Email address</label>
+                    <input id="loginEmail" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="email"
+                           @error('email') aria-invalid="true" aria-describedby="loginEmailError" @enderror
+                           class="w-full rounded-xl border border-gray-300 bg-white/90 px-4 py-3 text-base text-gray-900 shadow-sm outline-none transition focus:border-[#1F6F8B] focus:ring-2 focus:ring-[#1F6F8B]/25">
+                    @error('email')
+                        <p id="loginEmailError" class="mt-1.5 text-sm text-red-700">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <!-- Password -->
                 <div>
-                    <label for="loginPassword" class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 ml-4">Password</label>
+                    <label for="loginPassword" class="mb-1.5 block text-sm font-semibold text-gray-700">Password</label>
                     <div class="relative">
                         <input id="loginPassword" type="password" name="password" required autocomplete="current-password"
-                               class="w-full border-gray-200/85 rounded-2xl py-2.5 pl-6 pr-20 text-sm outline-none shadow-sm bg-white/70 focus:border-[#4a79f2] transition-all">
+                               class="w-full rounded-xl border border-gray-300 bg-white/90 py-3 pl-4 pr-20 text-base text-gray-900 shadow-sm outline-none transition focus:border-[#1F6F8B] focus:ring-2 focus:ring-[#1F6F8B]/25">
                         <button type="button" data-password-toggle="loginPassword" aria-label="Show password" aria-pressed="false"
-                                class="absolute inset-y-0 right-5 my-auto h-fit text-xs font-bold text-[#1e4d6d] hover:text-[#4a79f2] focus:outline-none focus:underline">
+                                class="absolute inset-y-0 right-4 my-auto h-fit rounded px-1 text-sm font-semibold text-[#1e4d6d] hover:text-[#1F6F8B] focus:outline-none focus:ring-2 focus:ring-[#1F6F8B]">
                             Show
                         </button>
                     </div>
                 </div>
 
                 <!-- Actions & Remember Me -->
-                <div class="flex flex-col gap-3 pt-2">
-                    <div class="flex items-center justify-between px-4">
+                <div class="flex flex-col gap-4 pt-2">
+                    <div class="flex items-center justify-between gap-3">
                         <div class="flex items-center gap-2">
-                            <input type="checkbox" name="remember" class="w-4 h-4 rounded border-gray-300 text-[#4a79f2] shadow-sm">
-                            <label class="text-[11px] text-gray-600 font-medium">Remember me</label>
+                            <input id="rememberMe" type="checkbox" name="remember" class="h-4 w-4 rounded border-gray-300 text-[#1F6F8B] focus:ring-[#1F6F8B]">
+                            <label for="rememberMe" class="text-sm text-gray-700">Remember me</label>
                         </div>
 
                         @if (Route::has('password.request'))
-                            <a class="text-[11px] text-gray-600 hover:text-[#4a79f2] underline" href="{{ route('password.request') }}">
+                            <a class="text-sm font-medium text-[#1e4d6d] underline decoration-transparent underline-offset-2 hover:decoration-current focus:outline-none focus:ring-2 focus:ring-[#1F6F8B]" href="{{ route('password.request') }}">
                                 Forgot password?
                             </a>
                         @endif
                     </div>
 
-                    <div class="flex items-center justify-between px-4">
-                        <a class="text-[11px] text-gray-600 hover:text-[#4a79f2] underline" href="{{ route('register') }}">
-                            Create Account
-                        </a>
-                    </div>
-
-                    <button type="submit" class="w-full bg-[#4a79f2] text-white py-3.5 rounded-2xl font-bold shadow-lg hover:bg-blue-600 transition-all uppercase tracking-widest text-sm mt-2">
-                        Login
+                    <button type="submit" class="mt-1 w-full rounded-xl bg-[#1F6F8B] py-3.5 text-base font-bold text-white shadow-md transition hover:bg-[#18586e] focus:outline-none focus:ring-2 focus:ring-[#1F6F8B] focus:ring-offset-2">
+                        Sign in
                     </button>
                 </div>
             </form>
+
+            <p class="mt-6 text-center text-sm text-gray-700">
+                New to Clinica Bansil?
+                <a class="font-semibold text-[#1e4d6d] underline underline-offset-2 hover:text-[#1F6F8B] focus:outline-none focus:ring-2 focus:ring-[#1F6F8B]" href="{{ route('register') }}">Create a patient account</a>
+            </p>
         </div>
     </div>
     <script>

@@ -14,8 +14,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Karma:wght@300;400;500;600;700&family=Montserrat+Alternates:wght@500;600;700&display=swap" rel="stylesheet">
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <style>
         [x-cloak] { display: none !important; }
         body { font-family: 'Inter', sans-serif; }
@@ -142,12 +140,33 @@
         <main class="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8">
             <div class="max-w-[1400px] mx-auto space-y-6">
 
+                @if(session('success'))
+                    <div role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                        <p class="font-semibold">Hindi nakansela ang appointment. Pakisuri ang dahilan ng cancellation.</p>
+                        @foreach($errors->all() as $error)
+                            <p class="mt-1">{{ $error }}</p>
+                        @endforeach
+                    </div>
+                @endif
+
                 {{-- Two Column Layout Grid --}}
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start font-karma">
                     
                     {{-- Appointments Table Area --}}
                     <div class="lg:col-span-3">
-                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                        <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
                             <div class="overflow-x-auto">
                                 <table class="w-full border-collapse text-left">
                                     <thead>
@@ -161,6 +180,14 @@
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
                                         @forelse($appointments as $appointment)
+                                            @php
+                                                $appointmentStatus = strtolower(str_replace('_', '-', $appointment->status));
+                                                $appointmentStatusClass = match($appointmentStatus) {
+                                                    'pending', 'booked', 'confirmed' => 'bg-amber-50 text-amber-800 border-amber-200',
+                                                    'checked-in', 'called', 'in-progress' => 'bg-sky-50 text-sky-800 border-sky-200',
+                                                    default => 'bg-slate-100 text-slate-700 border-slate-200',
+                                                };
+                                            @endphp
                                             <tr class="hover:bg-slate-50/60 transition-colors">
                                                 <td class="p-4 text-sm font-semibold text-slate-700 whitespace-nowrap">
                                                     {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}
@@ -169,17 +196,17 @@
                                                     {{ \Carbon\Carbon::parse($appointment->appointment_time)->format('h:i A') }}
                                                 </td>
                                                 <td class="p-4 text-sm text-[#003366] font-bold whitespace-nowrap">
-                                                    Dr. {{ $appointment->doctor->name ?? 'N/A' }}
+                                                    {{ $appointment->doctor->name ?? 'N/A' }}
                                                 </td>
                                                 <td class="p-4 whitespace-nowrap">
-                                                    <span class="inline-block bg-amber-50 text-amber-700 border border-amber-200/60 rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">
-                                                        {{ ucfirst($appointment->status) }}
+                                                    <span class="inline-block rounded-lg border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider {{ $appointmentStatusClass }}">
+                                                        {{ ucfirst($appointmentStatus) }}
                                                     </span>
                                                 </td>
                                                 <td class="p-4 text-center w-32 whitespace-nowrap">
                                                     <button
                                                         type="button"
-                                                        @click="openModal = true; selectedAppointment = '{{ $appointment->id }}'; selectedDoctor = 'Dr. {{ addslashes($appointment->doctor->name ?? 'N/A') }}';"
+                                                        @click="openModal = true; selectedAppointment = '{{ $appointment->id }}'; selectedDoctor = '{{ addslashes($appointment->doctor->name ?? 'N/A') }}';"
                                                         class="px-4 py-2 bg-[#1F6F8B] hover:bg-[#18576d] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition shadow-sm hover:shadow active:scale-[0.98]">
                                                         Cancel
                                                     </button>
@@ -189,7 +216,16 @@
                                             <tr>
                                                 <td colspan="5" class="text-center py-20 text-slate-400">
                                                     <i class="fa-regular fa-calendar-xmark text-slate-300 text-4xl mb-3 block"></i>
-                                                    <p class="text-sm font-medium italic">No upcoming appointments found.</p>
+                                                    <p class="text-sm font-medium">Wala kang upcoming appointments.</p>
+                                                    @if(auth()->user()->is_locked_from_booking)
+                                                        <a href="{{ route('patient.dashboard') }}" class="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-[#1F6F8B] underline underline-offset-2">
+                                                            Tingnan ang booking status
+                                                        </a>
+                                                    @else
+                                                        <a href="{{ route('patient.booking.step1') }}" class="mt-2 inline-flex items-center gap-2 rounded-lg bg-[#1F6F8B] px-4 py-2.5 text-xs font-bold uppercase text-white transition hover:bg-[#18576d]">
+                                                            <i class="fa-solid fa-calendar-plus"></i> Mag-book ng appointment
+                                                        </a>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -199,8 +235,51 @@
                         </div>
                     </div>
 
+                    {{-- Mobile appointment cards --}}
+                    <div class="space-y-3 md:hidden">
+                        @forelse($appointments as $appointment)
+                            @php
+                                $appointmentStatus = strtolower(str_replace('_', '-', $appointment->status));
+                                $appointmentStatusClass = match($appointmentStatus) {
+                                    'pending', 'booked', 'confirmed' => 'bg-amber-50 text-amber-800 border-amber-200',
+                                    'checked-in', 'called', 'in-progress' => 'bg-sky-50 text-sky-800 border-sky-200',
+                                    default => 'bg-slate-100 text-slate-700 border-slate-200',
+                                };
+                            @endphp
+                            <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <p class="text-xs font-semibold text-slate-500">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('D, M d, Y') }}</p>
+                                        <p class="mt-1 text-base font-bold text-[#003366]">{{ \Carbon\Carbon::parse($appointment->appointment_time)->format('h:i A') }}</p>
+                                    </div>
+                                    <span class="shrink-0 rounded-lg border px-2.5 py-1 text-[10px] font-bold uppercase {{ $appointmentStatusClass }}">
+                                        {{ ucfirst($appointmentStatus) }}
+                                    </span>
+                                </div>
+                                <p class="mt-3 text-sm font-semibold text-slate-800">{{ $appointment->doctor->name ?? 'Doctor details unavailable' }}</p>
+                                <button type="button"
+                                        @click="openModal = true; selectedAppointment = '{{ $appointment->id }}'; selectedDoctor = '{{ addslashes($appointment->doctor->name ?? 'N/A') }}';"
+                                        class="mt-4 w-full rounded-lg border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                    Cancel appointment
+                                </button>
+                            </article>
+                        @empty
+                            <div class="rounded-xl border border-slate-200 bg-white px-5 py-10 text-center shadow-sm">
+                                <i class="fa-regular fa-calendar-xmark text-3xl text-slate-300" aria-hidden="true"></i>
+                                <p class="mt-3 text-sm font-semibold text-slate-700">Wala kang upcoming appointments.</p>
+                                @if(auth()->user()->is_locked_from_booking)
+                                    <a href="{{ route('patient.dashboard') }}" class="mt-3 inline-flex text-sm font-semibold text-[#1F6F8B] underline underline-offset-2">Tingnan ang booking status</a>
+                                @else
+                                    <a href="{{ route('patient.booking.step1') }}" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#1F6F8B] px-4 py-2.5 text-xs font-bold uppercase text-white transition hover:bg-[#18576d]">
+                                        <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i> Mag-book ng appointment
+                                    </a>
+                                @endif
+                            </div>
+                        @endforelse
+                    </div>
+
                     {{-- Right Notifications / Info Side Panel --}}
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
+                    <div class="hidden lg:block bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 space-y-4">
                         <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
                             <i class="fa-regular fa-bell text-[#1F6F8B]"></i>
                             <h2 class="text-xs font-bold uppercase tracking-wider brand-header-text">Notifications</h2>
@@ -224,14 +303,14 @@
                 <button type="button" @click="openModal = false" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
             </div>
             <div class="p-6 space-y-5">
-                <div class="grid grid-cols-2 gap-4 bg-slate-50/60 p-4 rounded-xl border border-slate-100">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/60 p-4 rounded-xl border border-slate-100">
                     <div>
                         <label class="block text-[10px] font-bold brand-subtext-gray uppercase mb-0.5">Attending Doctor</label>
                         <p class="text-sm font-bold text-[#003366]" x-text="selectedDoctor"></p>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold brand-subtext-gray uppercase mb-0.5">Cancellation Policy</label>
-                        <p class="text-xs text-rose-600 font-semibold leading-tight">No refund will be issued after cancellation.</p>
+                        <p class="text-xs text-rose-700 font-semibold leading-relaxed">Ang cancellation o no-show ay maaaring magdagdag ng strike. Kapag umabot sa 3, masususpinde ang online booking.</p>
                     </div>
                 </div>
                 
@@ -240,11 +319,12 @@
                     @method('PATCH')
                     <div>
                         <label class="block text-[10px] font-bold brand-subtext-gray uppercase mb-1">Reason for Cancellation</label>
-                        <textarea name="cancel_reason" required rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F8B]/20 focus:border-[#1F6F8B] resize-none" placeholder="Please explain why you need to cancel..."></textarea>
+                        <textarea name="cancel_reason" required maxlength="500" rows="3" aria-describedby="cancelReasonHint" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1F6F8B]/20 focus:border-[#1F6F8B] resize-y" placeholder="Please explain why you need to cancel..."></textarea>
+                        <p id="cancelReasonHint" class="mt-1.5 text-xs text-slate-500">Required, up to 500 characters.</p>
                     </div>
                     <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
                         <button type="button" @click="openModal = false" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider rounded-xl transition">Close</button>
-                        <button type="submit" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-sm">Confirm Cancel</button>
+                        <button type="submit" class="px-5 py-2.5 bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition shadow-sm">Cancel appointment</button>
                     </div>
                 </form>
             </div>
