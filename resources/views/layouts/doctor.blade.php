@@ -62,11 +62,11 @@
                     <div class="hidden md:block space-y-1.5">
                         @php
                             $desktopLinks = [
-                                ['route' => 'doctor.dashboard', 'icon' => 'fa-gauge', 'label' => 'Dashboard'],
+                                ['route' => 'doctor.dashboard', 'icon' => 'fa-solid fa-gauge', 'label' => 'Dashboard'],
                                 ['route' => 'doctor.prescriptions.create', 'icon' => 'fi fi-ts-file-medical', 'label' => 'Prescriptions', 'is_fi' => true],
-                                ['route' => 'doctor.medicines.index', 'icon' => 'fa-capsules', 'label' => 'Medicines'],
-                                ['route' => 'doctor.patients.index', 'icon' => 'fa-regular fa-user', 'label' => 'Patients'],
-                                ['route' => 'doctor.schedules.index', 'icon' => 'fa-regular fa-calendar-plus', 'label' => 'Schedule'],
+                                ['route' => 'doctor.medicines.index', 'icon' => 'fa-solid fa-capsules', 'label' => 'Medicines'],
+                                ['route' => 'doctor.patients.index', 'icon' => 'fa-solid fa-user', 'label' => 'Patients'],
+                                ['route' => 'doctor.schedules.index', 'icon' => 'fa-solid fa-calendar-plus', 'label' => 'Schedule'],
                             ];
                         @endphp
                         @foreach($desktopLinks as $link)
@@ -89,11 +89,11 @@
                     <div class="md:hidden space-y-1.5">
                         @php
                             $mobileLinks = [
-                                ['route' => 'doctor.dashboard', 'icon' => 'fa-gauge', 'label' => 'Dashboard'],
-                                ['route' => 'doctor.prescriptions.create', 'icon' => 'fa-file-medical', 'label' => 'Prescriptions'],
-                                ['route' => 'doctor.medicines.index', 'icon' => 'fa-capsules', 'label' => 'Medicines'],
-                                ['route' => 'doctor.patients.index', 'icon' => 'fa-user', 'label' => 'Patients'],
-                                ['route' => 'doctor.schedules.index', 'icon' => 'fa-regular fa-calendar-plus', 'label' => 'Schedule'],
+                                ['route' => 'doctor.dashboard', 'icon' => 'fa-solid fa-gauge', 'label' => 'Dashboard'],
+                                ['route' => 'doctor.prescriptions.create', 'icon' => 'fa-solid fa-file-medical', 'label' => 'Prescriptions'],
+                                ['route' => 'doctor.medicines.index', 'icon' => 'fa-solid fa-capsules', 'label' => 'Medicines'],
+                                ['route' => 'doctor.patients.index', 'icon' => 'fa-solid fa-user', 'label' => 'Patients'],
+                                ['route' => 'doctor.schedules.index', 'icon' => 'fa-solid fa-calendar-plus', 'label' => 'Schedule'],
                             ];
                         @endphp
                         @foreach($mobileLinks as $link)

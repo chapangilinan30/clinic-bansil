@@ -6,13 +6,14 @@ use Illuminate\Console\Command;
 use App\Models\Appointment;
 use Carbon\Carbon;
 use App\Notifications\AppointmentStatusNotification;
+use App\Services\BookingStrikeService;
 
 class SendCheckinReminders extends Command
 {
     protected $signature = 'appointments:checkin-reminder {--test : Run in test mode for immediate notifications}';
     protected $description = 'Send reminders 20 minutes before appointments and mark no-shows one minute after their scheduled time';
 
-    public function handle()
+    public function handle(BookingStrikeService $strikeService)
     {
         $now = Carbon::now('Asia/Manila');
         $today = $now->toDateString();
@@ -57,6 +58,9 @@ class SendCheckinReminders extends Command
         foreach ($appointmentsNoShow as $appointment) {
             if (!$this->option('test')) {
                 $appointment->update(['status' => 'no-show']);
+                if ($appointment->user) {
+                    $strikeService->synchronize($appointment->user);
+                }
             }
 
             $patient = $appointment->patient;

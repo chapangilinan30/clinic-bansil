@@ -14,8 +14,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Karma:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <style>
         body { font-family: 'Inter', sans-serif; }
         .brand-sidebar-blue { background-color: #236ff2; }
@@ -109,26 +107,26 @@
         <div class="flex-1 flex flex-col overflow-hidden">
             
             <!-- Header -->
-            <header class="brand-header bg-white px-8 py-5 flex justify-between items-center shrink-0 border-b border-slate-200/40 shadow-sm font-['Karma']" style="font-family: 'Karma', serif;">
+            <header class="brand-header bg-white px-4 sm:px-6 md:px-8 py-4 sm:py-5 flex justify-between items-center gap-3 shrink-0 border-b border-slate-200/40 shadow-sm font-['Karma']" style="font-family: 'Karma', serif;">
                 <div class="flex items-center gap-3">
                     <div>
-                        <h1 class="text-[25px] font-bold tracking-wide brand-header-text">Clerk's Dashboard</h1>
-                        <p class="text-[13px] brand-subtext-gray font-semibold uppercase tracking-wider -mt-1">Smart Healthcare System</p>
+                        <h1 class="text-lg sm:text-[25px] font-bold tracking-wide brand-header-text">Clerk's Dashboard</h1>
+                        <p class="text-[10px] sm:text-[13px] brand-subtext-gray font-semibold uppercase tracking-wider -mt-1">Smart Healthcare System</p>
                     </div>
                 </div>
-                <div class="text-sm brand-subtext-gray brand-header-text font-bold opacity-90">
+                <div class="hidden sm:block text-xs sm:text-sm brand-subtext-gray brand-header-text font-bold opacity-90 text-right">
                     {{ \Carbon\Carbon::now('Asia/Manila')->format('l, F d, Y') }}
                 </div>
             </header>
 
-            <main class="flex-1 p-6 md:p-8 overflow-y-auto font-['Karma']" style="font-family: 'Karma', serif;">
+            <main class="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto font-['Karma']" style="font-family: 'Karma', serif;">
                 
                 <div class="max-w-[1400px] mx-auto">
                     
                     <!-- Title Row with back button -->
                     <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
                         <div>
-                            <h2 class="text-2xl font-bold text-[#003366] tracking-tight">
+                            <h2 class="text-xl sm:text-2xl font-bold text-[#003366] tracking-tight">
                                 Cancel Doctor Appointments
                             </h2>
                             <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">
@@ -146,7 +144,7 @@
                     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                         
                         <!-- Card Header Actions -->
-                        <div class="bg-slate-50/75 border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+                        <div class="bg-slate-50/75 border-b border-slate-100 px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
                             <div class="flex items-center gap-3">
                                 <input 
                                     type="checkbox" 
@@ -158,12 +156,12 @@
                             <span class="text-[11px] font-bold text-slate-400" x-text="selectedAppts.length + ' selected'"></span>
                         </div>
 
-                        <div class="p-6 space-y-3">
+                        <div class="p-3 sm:p-6 space-y-3">
                             @forelse($appointments as $appointment)
-                                <div class="flex items-center justify-between p-3.5 rounded-xl border-2 transition-all duration-150 shadow-sm cursor-pointer"
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-3.5 rounded-xl border-2 transition-all duration-150 shadow-sm cursor-pointer"
                                      :class="selectedAppts.some(a => a.id == '{{ $appointment->id }}') ? 'border-[#95CCDD] bg-blue-50/10' : 'border-slate-100 bg-white hover:border-slate-200'">
                                     
-                                    <div class="flex items-center gap-4">
+                                    <div class="flex min-w-0 items-center gap-3 sm:gap-4">
                                         <!-- Selection Checkbox -->
                                         <input 
                                             type="checkbox"
@@ -182,11 +180,11 @@
                                             "
                                             class="w-4.5 h-4.5 rounded text-[#1F6F8B] focus:ring-[#1F6F8B]/20 border-slate-300 cursor-pointer">
 
-                                        <div>
-                                            <h3 class="font-bold text-slate-800 capitalize text-base">
+                                        <div class="min-w-0">
+                                            <h3 class="font-bold text-slate-800 capitalize text-sm sm:text-base break-words">
                                                 {{ $appointment->patient_name }}
                                             </h3>
-                                            <p class="text-xs text-slate-400 mt-0.5 font-bold uppercase tracking-tight">
+                                            <p class="text-xs text-slate-400 mt-0.5 font-bold uppercase tracking-tight break-words">
                                                 Time: {{ $appointment->appointment_time }} 
                                                 <span class="mx-1 text-slate-300">•</span> 
                                                 Doctor: <span class="text-[#003366] font-bold">{{ $appointment->doctor_name }}</span>
@@ -194,7 +192,7 @@
                                         </div>
                                     </div>
 
-                                    <span class="text-[10px] font-black uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-100 px-3 py-1 rounded-md">
+                                    <span class="self-start sm:self-auto shrink-0 text-[10px] font-black uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-100 px-3 py-1 rounded-md">
                                         {{ $appointment->status }}
                                     </span>
                                 </div>
@@ -214,11 +212,11 @@
                          x-transition:leave="transition ease-in duration-100"
                          x-transition:leave-start="opacity-100 translate-y-0"
                          x-transition:leave-end="opacity-0 translate-y-2"
-                         class="mt-6 flex justify-start">
+                         class="mt-6 flex justify-stretch sm:justify-start">
                         <button
                             type="button"
                             @click="openModal = true"
-                            class="bg-red-600 hover:bg-red-700 text-white px-7 py-3.5 rounded-xl font-bold tracking-wider transition shadow-lg active:scale-95 flex items-center gap-2 text-xs uppercase">
+                            class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-5 sm:px-7 py-3.5 rounded-xl font-bold tracking-wider transition shadow-lg active:scale-95 flex items-center justify-center gap-2 text-xs uppercase">
                             <i class="fa-solid fa-trash-can"></i>
                             Cancel Selected (<span x-text="selectedAppts.length"></span>)
                         </button>
@@ -256,7 +254,7 @@
                 x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100">
+                class="relative transform max-h-[calc(100dvh-2rem)] w-full overflow-y-auto rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:max-w-lg border border-slate-100">
                 
                 <form action="{{ route('clerk.appointments.cancel') }}" method="POST" class="flex flex-col">
                     @csrf
@@ -270,7 +268,7 @@
                     <div class="bg-[#1F6F8B] px-6 py-5 text-white flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
                             <i class="fa-solid fa-triangle-exclamation text-xl text-orange-300"></i>
-                            <h2 class="text-lg font-bold">Confirm Bulk Cancellation</h2>
+                            <h2 class="text-base sm:text-lg font-bold">Confirm Bulk Cancellation</h2>
                         </div>
                         <button type="button" @click="openModal = false" class="text-white hover:text-slate-200">
                             <i class="fa-solid fa-xmark text-lg"></i>
@@ -286,9 +284,9 @@
                         <!-- Visual list of target appointments inside modal -->
                         <div class="max-h-40 overflow-y-auto border border-slate-100 bg-slate-50/50 rounded-xl p-3 divide-y divide-slate-100">
                             <template x-for="appt in selectedAppts" :key="appt.id">
-                                <div class="py-2 flex items-center justify-between text-xs font-semibold">
-                                    <span class="text-slate-700 capitalize" x-text="appt.name"></span>
-                                    <span class="text-slate-400 font-normal">
+                                <div class="py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs font-semibold">
+                                    <span class="text-slate-700 capitalize break-words" x-text="appt.name"></span>
+                                    <span class="text-slate-400 font-normal break-words">
                                         <span x-text="appt.time"></span> · <span class="text-[#003366] font-bold" x-text="appt.doctor"></span>
                                     </span>
                                 </div>
@@ -311,16 +309,16 @@
                     </div>
 
                     <!-- Modal Footer -->
-                    <div class="bg-slate-50 px-6 py-4 flex gap-3 justify-end border-t border-slate-100">
+                    <div class="bg-slate-50 px-4 sm:px-6 py-4 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end border-t border-slate-100">
                         <button 
                             type="button" 
                             @click="openModal = false"
-                            class="bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-xl transition duration-150">
+                            class="w-full sm:w-auto bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold text-xs uppercase tracking-widest px-4 sm:px-5 py-3 rounded-xl transition duration-150">
                             Keep Appointments
                         </button>
                         <button 
                             type="submit"
-                            class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-widest px-5 py-3 rounded-xl transition duration-150 shadow-md active:scale-95">
+                            class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-widest px-4 sm:px-5 py-3 rounded-xl transition duration-150 shadow-md active:scale-95">
                             Cancel Selected Appointments
                         </button>
                     </div>

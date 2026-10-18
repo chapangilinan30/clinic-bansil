@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('appointments:mark-no-shows')->everyMinute();
+Schedule::command('bookings:unlock-expired-accounts')->everyMinute();

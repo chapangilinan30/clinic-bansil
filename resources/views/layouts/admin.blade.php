@@ -110,26 +110,30 @@
         </div>
 
         <!-- MOBILE BOTTOM NAVIGATION -->
-        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-[#1F6F8B] text-white flex justify-around items-center py-2 z-50 border-t border-white/10 shadow-lg">
-            <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-center gap-1 text-[10px] {{ request()->routeIs('admin.dashboard') ? 'text-amber-300 font-bold' : 'text-blue-100 hover:text-white' }}">
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-[#1F6F8B] text-white grid grid-cols-6 justify-items-center items-center px-1 py-1 z-50 border-t border-white/10 shadow-lg">
+            <a href="{{ route('admin.dashboard') }}" class="flex min-h-[52px] w-full flex-col items-center justify-center gap-1 text-[9px] sm:text-[10px] {{ request()->routeIs('admin.dashboard') ? 'text-amber-300 font-bold' : 'text-blue-100 hover:text-white' }}">
                 <i class="fa-solid fa-gauge text-base"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="{{ route('admin.users.index') }}" class="flex flex-col items-center gap-1 text-[10px] {{ request()->routeIs('admin.users.index') ? 'text-amber-300 font-bold' : 'text-blue-100 hover:text-white' }}">
+            <a href="{{ route('admin.users.index') }}" class="flex min-h-[52px] w-full flex-col items-center justify-center gap-1 text-[9px] sm:text-[10px] {{ request()->routeIs('admin.users.*') ? 'text-amber-300 font-bold' : 'text-blue-100 hover:text-white' }}">
                 <i class="fa-solid fa-user text-base"></i>
                 <span>Users</span>
             </a>
-            <a href="{{ route('admin.services.index') }}" class="flex flex-col items-center gap-1 text-[10px] {{ request()->routeIs('admin.services.index') ? 'text-amber-300 font-bold' : 'text-blue-100 hover:text-white' }}">
+            <a href="{{ route('admin.services.index') }}" class="flex min-h-[52px] w-full flex-col items-center justify-center gap-1 text-[9px] sm:text-[10px] {{ request()->routeIs('admin.services.*') ? 'text-amber-300 font-bold' : 'text-blue-100 hover:text-white' }}">
                 <i class="fa-solid fa-stethoscope text-base"></i>
                 <span>Services</span>
             </a>
-            <a href="{{ route('admin.reports.index') }}" class="flex flex-col items-center gap-1 text-[10px] {{ request()->routeIs('admin.reports.index') ? 'text-amber-300 font-bold' : 'text-blue-100 hover:text-white' }}">
+            <a href="{{ route('admin.reports.index') }}" class="flex min-h-[52px] w-full flex-col items-center justify-center gap-1 text-[9px] sm:text-[10px] {{ request()->routeIs('admin.reports.*') ? 'text-amber-300 font-bold' : 'text-blue-100 hover:text-white' }}">
                 <i class="fa-solid fa-chart-line text-base"></i>
                 <span>Reports</span>
             </a>
-            <form method="POST" action="{{ route('logout') }}" class="flex flex-col items-center">
+            <a href="{{ route('admin.appeals.index') }}" class="flex min-h-[52px] w-full flex-col items-center justify-center gap-1 text-[9px] sm:text-[10px] {{ request()->routeIs('admin.appeals.*') ? 'text-amber-300 font-bold' : 'text-blue-100 hover:text-white' }}">
+                <i class="fa-solid fa-envelope-open-text text-base"></i>
+                <span>Appeals</span>
+            </a>
+            <form method="POST" action="{{ route('logout') }}" class="flex min-h-[52px] w-full flex-col items-center justify-center">
                 @csrf
-                <button type="submit" class="flex flex-col items-center gap-1 text-[10px] text-blue-100 hover:text-red-300">
+                <button type="submit" class="flex min-h-[52px] w-full flex-col items-center justify-center gap-1 text-[9px] sm:text-[10px] text-blue-100 hover:text-red-300">
                     <i class="fa-solid fa-right-from-bracket text-base"></i>
                     <span>Logout</span>
                 </button>

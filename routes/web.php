@@ -19,6 +19,7 @@ use App\Http\Controllers\DoctorScheduleController;
 use App\Http\Controllers\DoctorAppointmentController;
 use App\Models\Appointment;
 use App\Http\Controllers\DoctorUnavailabilityController;
+use App\Http\Middleware\RefreshExpiredBookingLockout;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,7 +69,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     */
     Route::prefix('patient')
         ->name('patient.')
-        ->middleware(['role:patient']) 
+        ->middleware(['role:patient', RefreshExpiredBookingLockout::class])
         ->group(function () {
             
             Route::patch('/appointments/{id}/cancel', [PatientDashboardController::class, 'cancelAppointment'])->name('appointments.cancel');

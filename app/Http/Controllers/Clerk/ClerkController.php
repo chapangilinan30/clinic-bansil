@@ -13,13 +13,14 @@ use App\Notifications\AppointmentStatusNotification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AppointmentCancelledMail;
+use App\Services\BookingStrikeService;
 
 class ClerkController extends Controller
 {
     // -------------------------------
     // Dashboard / Queue
     // -------------------------------
-    public function index(Request $request)
+    public function index(Request $request, BookingStrikeService $strikeService)
     {
         $selectedDate = $request->query('schedule_date', Carbon::today('Asia/Manila')->toDateString());
         $doctorId = $request->query('doctor_id');
@@ -46,7 +47,7 @@ class ClerkController extends Controller
         // --- DYNAMIC NO-SHOW CALCULATION ---
         $now = Carbon::now('Asia/Manila');
 
-        $queue->transform(function ($appointment) use ($now) {
+        $queue->transform(function ($appointment) use ($now, $strikeService) {
             if (in_array(strtolower($appointment->status), ['pending', 'booked'])) {
                 
                 // 1. Extract only the date part (YYYY-MM-DD)
@@ -80,6 +81,7 @@ class ClerkController extends Controller
 
                     // Send the database notification using the resolved user model
                     if ($targetUser) {
+                        $strikeService->synchronize($targetUser);
                         $targetUser->notify(
                             new \App\Notifications\AppointmentStatusNotification('Your appointment has been marked as No-Show due to missed check-in time.')
                         );
@@ -160,7 +162,7 @@ class ClerkController extends Controller
     // -------------------------------
     // UPDATE APPOINTMENT STATUS
     // -------------------------------
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, $id, BookingStrikeService $strikeService)
     {
         $request->validate([
             'status' => 'required|string',
@@ -218,6 +220,10 @@ class ClerkController extends Controller
             ?? ($appointment->patient ? $appointment->patient->user : null);
 
         if ($targetUser) {
+            if ($requestedStatus === 'no-show') {
+                $strikeService->synchronize($targetUser);
+            }
+
             $targetUser->notify(
                 new AppointmentStatusNotification("Your appointment status has been updated to: {$request->status}")
             );

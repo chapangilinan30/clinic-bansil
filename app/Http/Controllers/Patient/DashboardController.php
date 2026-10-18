@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Appointment;
 use App\Models\User;
+use App\Services\BookingStrikeService;
 
 class DashboardController extends Controller
 {
@@ -149,7 +150,7 @@ class DashboardController extends Controller
     /**
      * Handles patient-side individual appointment cancellation & strike verification
      */
-    public function cancelAppointment(Request $request, $id)
+    public function cancelAppointment(Request $request, $id, BookingStrikeService $strikeService)
     {
         $request->validate([
             'cancel_reason' => 'required|string|max:500'
@@ -171,21 +172,9 @@ class DashboardController extends Controller
             'cancel_reason' => $request->cancel_reason
         ]);
 
-        $strikeQuery = Appointment::where('user_id', $userId)
-            ->whereIn('status', ['cancelled', 'no-show']);
+        $strikeCount = $strikeService->synchronize($user);
 
-        if ($user->reactivation_status === 'approved') {
-            $strikeQuery->where('updated_at', '>', $user->updated_at);
-        }
-
-        $strikeCount = $strikeQuery->count();
-
-        if ($strikeCount >= 3) {
-            User::where('id', $userId)->update([
-                'is_locked_from_booking' => true,
-                'reactivation_status' => 'none'
-            ]);
-
+        if ($user->is_locked_from_booking) {
             return back()->with('error', 'Appointment cancelled. You have reached 3 strikes (cancelled/missed sessions). Your account booking access has been suspended.');
         }
 

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Appointment;
 use App\Notifications\AppointmentStatusNotification;
+use App\Services\BookingStrikeService;
 use Carbon\Carbon;
 
 class MarkAppointmentsAsNoShow extends Command
@@ -12,7 +13,7 @@ class MarkAppointmentsAsNoShow extends Command
     protected $signature = 'appointments:mark-no-shows';
     protected $description = 'Mark pending appointments as no-show one minute after their scheduled time';
 
-    public function handle()
+    public function handle(BookingStrikeService $strikeService)
 {
     $now = Carbon::now('Asia/Manila');
     $this->info("Current Time: " . $now->toTimeString());
@@ -34,6 +35,7 @@ class MarkAppointmentsAsNoShow extends Command
         if ($appointmentDateTime->copy()->addMinute()->lessThanOrEqualTo($now)) {
             $appt->update(['status' => 'no-show']);
             if ($appt->user) {
+                $strikeService->synchronize($appt->user);
                 $appt->user->notify(new AppointmentStatusNotification(
                     "Your appointment at {$appt->appointment_time} was marked as no-show because you did not check in by the scheduled time."
                 ));
