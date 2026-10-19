@@ -62,7 +62,7 @@
                     @endforeach
                     
                     <a href="/admin/appeals" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 {{ request()->is('admin/appeals*') ? 'bg-white brand-text-blue shadow-md font-semibold' : 'text-blue-100 hover:bg-white/10' }}">
-                        <i class="fa-solid fa-envelope-open-text text-base"></i> <span>Appeals</span>
+                        <i class="fa-solid fa-envelope-open-text text-base"></i> <span>Blocked Users</span>
                     </a>
                 </nav>
             </div>

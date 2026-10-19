@@ -18,6 +18,21 @@ class BookingStrikeService
         $strikeCount = $this->strikeQuery($user)->count();
 
         if ($user->is_locked_from_booking) {
+            // Self-heal: if unblocked_at is missing on an existing lock, compute and assign it
+            if (is_null($user->unblocked_at)) {
+                $thirdStrikeAt = $this->strikeQuery($user)
+                    ->orderBy('updated_at')
+                    ->orderBy('id')
+                    ->offset(self::STRIKE_LIMIT - 1)
+                    ->value('updated_at');
+
+                $unblockedAt = $thirdStrikeAt 
+                    ? Carbon::parse($thirdStrikeAt)->addDays(self::COOLDOWN_DAYS) 
+                    : now()->addDays(self::COOLDOWN_DAYS);
+
+                $user->forceFill(['unblocked_at' => $unblockedAt])->save();
+            }
+
             if ($this->unlockIfExpired($user)) {
                 return $this->strikeQuery($user)->count();
             }
@@ -26,8 +41,20 @@ class BookingStrikeService
         }
 
         if ($strikeCount >= self::STRIKE_LIMIT) {
+            // Find the exact time of the 3rd strike to calculate the auto-unblock date
+            $thirdStrikeAt = $this->strikeQuery($user)
+                ->orderBy('updated_at')
+                ->orderBy('id')
+                ->offset(self::STRIKE_LIMIT - 1)
+                ->value('updated_at');
+
+            $unblockedAt = $thirdStrikeAt 
+                ? Carbon::parse($thirdStrikeAt)->addDays(self::COOLDOWN_DAYS) 
+                : now()->addDays(self::COOLDOWN_DAYS);
+
             $user->forceFill([
                 'is_locked_from_booking' => true,
+                'unblocked_at' => $unblockedAt,
                 'reactivation_status' => 'none',
             ])->save();
         }
@@ -53,6 +80,7 @@ class BookingStrikeService
 
         $user->forceFill([
             'is_locked_from_booking' => false,
+            'unblocked_at' => null,
             'reactivation_reason' => null,
             'reactivation_status' => 'approved',
             'last_reactivated_at' => now()->subSecond(),

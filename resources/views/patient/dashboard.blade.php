@@ -149,34 +149,19 @@
                         
                         <hr class="border-rose-100/70">
 
-                        @if(auth()->user()->reactivation_status === 'pending')
-                            <div class="bg-amber-50 border border-amber-100 text-amber-800 p-4 rounded-xl flex items-center gap-3 text-xs font-semibold">
-                                <i class="fa-solid fa-circle-notch animate-spin text-sm text-amber-500"></i>
-                                <span>Appeal Under Review: Your account reactivation request has been submitted and is currently pending audit by desk operators. Please hold.</span>
+                        <div class="bg-white/80 border border-rose-200/60 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-semibold text-rose-900">
+                            <div class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-robot text-base text-rose-600"></i>
+                                <span>Your account will be <strong>automatically unblocked</strong> by the system once the lockout period expires. No manual appeal is required.</span>
                             </div>
-                        @else
-                            <form action="{{ route('patient.reactivation.submit') }}" method="POST" class="space-y-3">
-                                @csrf
-                                <div>
-                                    <label for="reactivation_reason" class="block font-bold text-slate-700 text-xs uppercase tracking-wider mb-2">
-                                        File Reactivation Appeal
-                                    </label>
-                                    <textarea 
-                                        name="reactivation_reason" 
-                                        id="reactivation_reason" 
-                                        rows="3" 
-                                        placeholder="Please detail a valid explanation stating why your scheduling features should be restored..." 
-                                        class="w-full text-slate-700 text-xs font-medium border border-slate-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition shadow-sm resize-none"
-                                        required></textarea>
+
+                            @if(auth()->user()->unblocked_at)
+                                <div class="shrink-0 bg-rose-100/70 text-rose-800 px-3 py-1.5 rounded-lg border border-rose-200 text-center text-[11px]">
+                                    <i class="fa-regular fa-clock mr-1"></i>
+                                    {{ \Carbon\Carbon::parse(auth()->user()->unblocked_at)->format('M d, Y h:i A') }}
                                 </div>
-                                <div class="flex justify-end">
-                                    <button type="submit" class="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white py-2.5 px-5 rounded-xl shadow-sm hover:shadow font-bold text-xs uppercase tracking-wider transition active:scale-[0.98]">
-                                        <i class="fa-solid fa-paper-plane"></i>
-                                        Submit Reactivation Request
-                                    </button>
-                                </div>
-                            </form>
-                        @endif
+                            @endif
+                        </div>
                     </div>
                 @endif
 

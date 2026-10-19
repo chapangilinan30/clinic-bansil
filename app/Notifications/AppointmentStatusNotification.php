@@ -10,55 +10,47 @@ class AppointmentStatusNotification extends Notification
 {
     use Queueable;
 
-    public $message;
+    protected $appointment;
+    protected $message;
 
-    /**
-     * Create a new notification instance.
-     *
-     * @param string $message
-     */
-    public function __construct(string $message)
+    public function __construct($appointment, $message = null)
     {
+        $this->appointment = $appointment;
         $this->message = $message;
     }
 
-    /**
-     * Determine the notification's delivery channels.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function via($notifiable)
+    public function via($notifiable): array
     {
-        // Save in database and optionally send email
+        // Supports both database logs and email notifications
         return ['database', 'mail'];
     }
 
-    /**
-     * Get the array representation for database storage.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function toDatabase($notifiable)
+    public function toDatabase($notifiable): array
     {
+        $dept = $this->appointment->department ?? 'General';
+        $doctorName = $this->appointment->doctor->name ?? 'N/A';
+        
+        $finalMessage = $this->message ?? "Your appointment with Dr. {$doctorName} ({$dept}) has been updated.";
+
         return [
-            'message' => $this->message,
-            'appointment_time' => $notifiable->appointment_time ?? null,
-            'appointment_id' => $notifiable->id ?? null,
+            'department'       => $dept,
+            'doctor'           => $doctorName,
+            'reason_for_visit' => $this->appointment->reason_for_visit ?? 'Regular Checkup',
+            'message'          => is_string($finalMessage) ? $finalMessage : json_encode($finalMessage),
+            'appointment_id'   => $this->appointment->id ?? null,
         ];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
-     */
-    public function toMail($notifiable)
+    public function toMail($notifiable): MailMessage
     {
+        $dept = $this->appointment->department ?? 'General';
+        $doctorName = $this->appointment->doctor->name ?? 'N/A';
+        $finalMessage = $this->message ?? "Your appointment with Dr. {$doctorName} ({$dept}) has been updated.";
+
         return (new MailMessage)
-                    ->subject('Appointment Notification')
-                    ->line($this->message);
+            ->subject('Clinic Appointment Update')
+            ->line($finalMessage)
+            ->line("Department: {$dept}")
+            ->line("Doctor: Dr. {$doctorName}");
     }
 }

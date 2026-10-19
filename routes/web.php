@@ -77,8 +77,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/appointments', [PatientDashboardController::class, 'appointments'])->name('appointments');
             Route::get('/history', [PatientDashboardController::class, 'history'])->name('history');
 
-            // ACCOUNT REACTIVATION APPEAL SUBMISSION
-            Route::post('/reactivation-request', [PatientDashboardController::class, 'submitReactivation'])->name('reactivation.submit');
+            
 
             // BOOKING STEPS
             Route::get('/booking', [BookingController::class, 'stepDepartment'])->name('booking.step1');
@@ -209,10 +208,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('services', ServiceController::class);
         Route::resource('reports', ReportController::class);
 
-        // Disciplinary Appeals Workspace Management (Moved to Admin Group)
+       // Blocked Users Overview
         Route::get('/appeals', [AdminAppealController::class, 'index'])->name('appeals.index');
-        Route::post('/appeals/{id}/approve', [AdminAppealController::class, 'approve'])->name('appeals.approve');
-        Route::post('/appeals/{id}/deny', [AdminAppealController::class, 'deny'])->name('appeals.deny');
     });
     /*
     |--------------------------------------------------------------------------
