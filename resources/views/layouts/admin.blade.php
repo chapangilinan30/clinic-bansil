@@ -110,7 +110,7 @@
         </div>
 
         <!-- MOBILE BOTTOM NAVIGATION -->
-        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-[#1F6F8B] text-white grid grid-cols-6 justify-items-center items-center px-1 py-1 z-50 border-t border-white/10 shadow-lg">
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-[#1F6F8B] text-white flex flex-row justify-around w-full items-center px-1 py-1 z-50 border-t border-white/10 shadow-lg">
             <a href="{{ route('admin.dashboard') }}" class="flex min-h-[52px] w-full flex-row items-center justify-center gap-1 text-[9px] sm:text-[10px] {{ request()->routeIs('admin.dashboard') ? 'text-amber-300 font-bold' : 'text-blue-100 hover:text-white' }}">
                 <i class="fa-solid fa-gauge text-base"></i>
                 <span>Dashboard</span>
