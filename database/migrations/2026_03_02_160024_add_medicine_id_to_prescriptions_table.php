@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+       if (!Schema::hasTable('prescriptions') || !Schema::hasTable('medicines')) {
+           return;
+       }
+
        Schema::table('prescriptions', function (Blueprint $table) {
         // Only add column if it doesn't exist
         if (!Schema::hasColumn('prescriptions', 'medicine_id')) {

@@ -7,7 +7,6 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\AppealController as AdminAppealController; // <-- New Admin Appeal Controller
 use App\Http\Controllers\Clerk\ClerkController;
 use App\Http\Controllers\Patient\DashboardController as PatientDashboardController;
 use App\Http\Controllers\AppointmentController;
@@ -19,7 +18,7 @@ use App\Http\Controllers\DoctorScheduleController;
 use App\Http\Controllers\DoctorAppointmentController;
 use App\Models\Appointment;
 use App\Http\Controllers\DoctorUnavailabilityController;
-use App\Http\Middleware\RefreshExpiredBookingLockout;
+use Carbon\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,7 +68,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     */
     Route::prefix('patient')
         ->name('patient.')
-        ->middleware(['role:patient', RefreshExpiredBookingLockout::class])
+        ->middleware(['role:patient'])
         ->group(function () {
             
             Route::patch('/appointments/{id}/cancel', [PatientDashboardController::class, 'cancelAppointment'])->name('appointments.cancel');
@@ -134,7 +133,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             =============================== */
             Route::get('/dashboard', function () {
                 $doctorId = auth()->id();
-                $today = now()->toDateString();
+                $today = Carbon::today('Asia/Manila')->toDateString();
 
                 $totalAppointmentsToday = Appointment::where('doctor_id', $doctorId)->whereDate('appointment_date', $today)->count();
                 $patientsInQueue = Appointment::where('doctor_id', $doctorId)->whereIn('status', ['pending', 'checked-in', 'in_progress'])->count();
@@ -208,8 +207,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('services', ServiceController::class);
         Route::resource('reports', ReportController::class);
 
-       // Blocked Users Overview
-        Route::get('/appeals', [AdminAppealController::class, 'index'])->name('appeals.index');
     });
     /*
     |--------------------------------------------------------------------------

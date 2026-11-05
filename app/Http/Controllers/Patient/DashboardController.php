@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Appointment;
-use App\Models\User;
-use App\Services\BookingStrikeService;
 
 class DashboardController extends Controller
 {
@@ -25,7 +23,7 @@ class DashboardController extends Controller
         // 1. Get the patient's active (upcoming or ongoing) appointment
         $activeAppointment = Appointment::with('doctor')
             ->where('user_id', $userId)
-            ->whereIn('status', ['pending', 'booked', 'confirmed', 'checked-in', 'called', 'in_progress'])
+            ->whereIn('status', ['pending', 'booked', 'confirmed', 'checked-in', 'called', 'in_progress', 'in-progress', 'in-session'])
             ->orderBy('appointment_date', 'asc')
             ->orderBy('appointment_time', 'asc')
             ->orderBy('queue_number', 'asc')
@@ -49,7 +47,7 @@ class DashboardController extends Controller
         // ============================
         $upcoming = Appointment::with('doctor')
             ->where('user_id', $userId)
-            ->whereIn('status', ['pending', 'checked-in', 'called', 'in_progress'])
+            ->whereIn('status', ['pending', 'booked', 'confirmed', 'checked-in', 'called', 'in_progress', 'in-progress', 'in-session'])
             ->orderBy('appointment_date', 'asc')
             ->orderBy('appointment_time', 'asc')
             ->get();
@@ -148,17 +146,15 @@ class DashboardController extends Controller
     }
 
     /**
-     * Handles patient-side individual appointment cancellation & strike verification
+     * Handles patient-side individual appointment cancellation.
      */
-    public function cancelAppointment(Request $request, $id, BookingStrikeService $strikeService)
+    public function cancelAppointment(Request $request, $id)
     {
         $request->validate([
             'cancel_reason' => 'required|string|max:500'
         ]);
 
         $userId = auth()->id();
-        $user = auth()->user();
-
         $appointment = Appointment::where('id', $id)
             ->where('user_id', $userId)
             ->firstOrFail();
@@ -172,35 +168,6 @@ class DashboardController extends Controller
             'cancel_reason' => $request->cancel_reason
         ]);
 
-        $strikeCount = $strikeService->synchronize($user);
-
-        if ($user->is_locked_from_booking) {
-            return back()->with('error', 'Appointment cancelled. You have reached 3 strikes (cancelled/missed sessions). Your account booking access has been suspended.');
-        }
-
-        return back()->with('success', 'Appointment cancelled successfully. Current Strike Count: ' . $strikeCount . '/3.');
-    }
-
-    /**
-     * Process a locked-out patient's appeal statement submission
-     */
-    public function submitReactivation(Request $request)
-    {
-        $request->validate([
-            'reactivation_reason' => 'required|string|max:1000',
-        ], [
-            'reactivation_reason.required' => 'Please provide an explanatory reason for your booking reactivation request.',
-        ]);
-
-        $userId = auth()->id();
-
-        User::where('id', $userId)->update([
-            'is_locked_from_booking' => true,
-            'reactivation_reason'    => $request->reactivation_reason,
-            'reactivation_status'    => 'pending',
-        ]);
-
-        return redirect()->route('patient.dashboard')
-            ->with('success', 'Your account reactivation request has been submitted successfully and is currently under administrative review.');
+        return back()->with('success', 'Appointment cancelled successfully.');
     }
 }

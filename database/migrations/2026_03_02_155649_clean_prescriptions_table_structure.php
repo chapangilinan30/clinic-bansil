@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasTable('prescriptions')) {
+            return;
+        }
+
         Schema::table('prescriptions', function (Blueprint $table) {
 
             // Drop foreign key safely

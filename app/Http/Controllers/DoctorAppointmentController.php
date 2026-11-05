@@ -88,7 +88,7 @@ class DoctorAppointmentController extends Controller
     public function index()
     {
         $appointments = Appointment::where('doctor_id', auth()->id())
-            ->whereDate('appointment_date', today())
+            ->whereDate('appointment_date', Carbon::today('Asia/Manila')->toDateString())
             ->orderBy('appointment_time', 'asc')
             ->orderBy('queue_number', 'asc')
             ->get();

@@ -21,15 +21,15 @@
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-[#f4f7fc] text-slate-700 h-screen flex flex-col overflow-hidden font-sans" x-data="{ mobileSidebarOpen: false }">
+<body class="bg-[#f4f7fc] text-slate-700 h-screen h-[100dvh] min-h-[100svh] flex flex-col overflow-hidden font-sans" x-data="{ mobileSidebarOpen: false }">
 
-    <div class="flex-1 flex overflow-hidden relative">
+    <div class="flex-1 min-h-0 flex overflow-hidden relative">
 
         <!-- MOBILE BACKDROP -->
         <div x-cloak x-show="mobileSidebarOpen" @click="mobileSidebarOpen = false" class="fixed inset-0 z-40 bg-black/50 md:hidden"></div>
 
         <!-- SIDEBAR -->
-        <aside x-cloak :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed md:static inset-y-0 left-0 z-50 w-64 bg-[#1F6F8B] text-white flex flex-col justify-between p-6 shadow-xl shrink-0 transform transition-transform duration-300 ease-in-out md:translate-x-0">
+        <aside x-cloak :class="mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#1F6F8B] text-white flex flex-col justify-between p-6 shadow-xl shrink-0 transform transition-transform duration-300 ease-in-out lg:translate-x-0 overflow-y-auto">
             <div class="space-y-8">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -59,7 +59,7 @@
                 <!-- Navigation Links -->
                 <nav class="space-y-1.5 text-sm font-medium font-['Karma']" style="font-family: 'Karma', serif;">
                     <!-- DESKTOP LINKS (Original full list) -->
-                    <div class="hidden md:block space-y-1.5">
+                    <div class="hidden lg:block space-y-1.5">
                         @php
                             $desktopLinks = [
                                 ['route' => 'doctor.dashboard', 'icon' => 'fa-solid fa-gauge', 'label' => 'Dashboard'],
@@ -86,7 +86,7 @@
                     </div>
 
                     <!-- MOBILE LINKS -->
-                    <div class="md:hidden space-y-1.5">
+                    <div class="lg:hidden space-y-1.5">
                         @php
                             $mobileLinks = [
                                 ['route' => 'doctor.dashboard', 'icon' => 'fa-solid fa-gauge', 'label' => 'Dashboard'],
@@ -134,24 +134,24 @@
         </aside>
 
         <!-- MAIN CONTENT AREA -->
-        <div class="flex-1 flex flex-col overflow-hidden w-full">
+        <div class="flex-1 min-w-0 flex flex-col overflow-hidden w-full">
             <header class="brand-header bg-white px-4 md:px-8 py-5 flex justify-between items-center shrink-0 border-b border-slate-200/40 shadow-sm font-['Karma']" style="font-family: 'Karma', serif;">
-                <div class="flex items-center gap-3">
+                <div class="flex min-w-0 items-center gap-3">
                     <!-- Mobile Hamburger Toggle -->
-                    <button @click="mobileSidebarOpen = !mobileSidebarOpen" aria-label="Toggle doctor navigation" :aria-expanded="mobileSidebarOpen.toString()" class="md:hidden text-slate-700 hover:text-[#1F6F8B] focus:outline-none focus:ring-2 focus:ring-[#1F6F8B] mr-1">
+                    <button @click="mobileSidebarOpen = !mobileSidebarOpen" aria-label="Toggle doctor navigation" :aria-expanded="mobileSidebarOpen.toString()" class="lg:hidden shrink-0 text-slate-700 hover:text-[#1F6F8B] focus:outline-none focus:ring-2 focus:ring-[#1F6F8B] mr-1">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                     <div>
-                        <h1 class="text-[20px] md:text-[25px] font-bold tracking-wide brand-header-text">@yield('title', 'Doctor Dashboard')</h1>
-                        <p class="text-[11px] md:text-[13px] brand-subtext-gray font-semibold uppercase tracking-wider -mt-1">Smart Healthcare System</p>
+                        <h1 class="text-lg md:text-[25px] font-bold tracking-wide leading-tight brand-header-text">@yield('title', 'Doctor Dashboard')</h1>
+                        <p class="hidden sm:block text-[11px] md:text-[13px] brand-subtext-gray font-semibold uppercase tracking-wider -mt-1">Smart Healthcare System</p>
                     </div>
                 </div>
-                <div class="text-xs md:text-sm brand-subtext-gray brand-header-text font-bold opacity-95">
+                <div class="hidden md:block shrink-0 pl-3 text-xs lg:text-sm brand-subtext-gray brand-header-text font-bold opacity-95">
                     {{ \Carbon\Carbon::now('Asia/Manila')->format('l, F d, Y') }}
                 </div>
             </header>
 
-            <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+            <main class="flex-1 min-h-0 min-w-0 p-4 md:p-8 overflow-y-auto">
                 @if(session('success'))
                     <div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl shadow-sm text-sm">{{ session('success') }}</div>
                 @endif

@@ -7,7 +7,11 @@ return new class extends Migration
 {
     public function up(): void
 {
-    Schema::table('prescriptions', function (Blueprint $table) {
+        if (!Schema::hasTable('prescriptions')) {
+            return;
+        }
+
+        Schema::table('prescriptions', function (Blueprint $table) {
 
         if (!Schema::hasColumn('prescriptions', 'dosage')) {
             $table->string('dosage')->nullable();

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use App\Models\User;
+use App\Models\Patient;
 use App\Models\DoctorSchedule;
 use App\Models\DoctorUnavailability;
 use App\Models\Appointment;
@@ -19,22 +20,9 @@ class BookingController extends Controller
     =============================== */
     public function stepDepartment()
     {
-        $userId = Auth::id();
         $user = Auth::user();
 
-        // 🚫 BLOCK IF PATIENT HAS ACCUMULATED 3 STRIKES & IS LOCKED
-        if ($user && $user->is_locked_from_booking) {
-            return redirect()
-                ->route('patient.dashboard')
-                ->with('error', 'Your booking access has been suspended due to hitting 3 cancellation or no-show strikes. Please look into requesting account reactivation.');
-        }
-
-        // 🚫 BLOCK IF USER HAS ACTIVE APPOINTMENT
-        $hasActive = Appointment::where('user_id', $userId)
-            ->whereIn('status', ['pending', 'checked-in', 'in_progress', 'called'])
-            ->exists();
-
-        if ($hasActive) {
+        if ($user && $this->hasActiveAppointment($user)) {
             return redirect()
                 ->route('patient.dashboard')
                 ->with('error', 'You already have an active appointment. Please wait until it is completed before booking again.');
@@ -49,15 +37,6 @@ class BookingController extends Controller
     =============================== */
     public function stepDoctor(Request $request)
     {
-        $user = Auth::user();
-
-        // 🚫 BLOCK IF PATIENT HAS ACCUMULATED 3 STRIKES & IS LOCKED
-        if ($user && $user->is_locked_from_booking) {
-            return redirect()
-                ->route('patient.dashboard')
-                ->with('error', 'Your booking access has been suspended due to hitting 3 cancellation or no-show strikes.');
-        }
-
         if ($request->department_id) {
             session(['booking.department_id' => $request->department_id]);
         }
@@ -170,14 +149,12 @@ class BookingController extends Controller
     =============================== */
     public function store(Request $request)
     {
-        $userId = Auth::id();
         $user = Auth::user();
 
-        // Final fail-safe lock security check
-        if ($user && $user->is_locked_from_booking) {
+        if ($user && $this->hasActiveAppointment($user)) {
             return redirect()
                 ->route('patient.dashboard')
-                ->with('error', 'Booking transaction blocked. Access suspended.');
+                ->with('error', 'You already have an active appointment. Please wait until it is completed before booking again.');
         }
 
         $booking = session('booking');
@@ -196,6 +173,13 @@ class BookingController extends Controller
         }
 
         $doctor = User::findOrFail($booking['doctor_id']);
+        $patient = Patient::where('user_id', $user->id)->first();
+
+        if (! $patient) {
+            return redirect()
+                ->route('patient.dashboard')
+                ->with('error', 'Your patient profile is missing. Please contact the clinic before booking an appointment.');
+        }
 
         $queueNumber = Appointment::where('doctor_id', $doctor->id)
             ->where('appointment_date', $booking['date'])
@@ -204,8 +188,8 @@ class BookingController extends Controller
         $queueNumber = $queueNumber ? $queueNumber + 1 : 1;
 
         Appointment::create([
-            'user_id'          => $userId,
-            'patient_id'       => $userId,
+            'user_id'          => $user->id,
+            'patient_id'       => $patient->id,
             'doctor_id'        => $doctor->id,
             'doctor_name'      => $doctor->name,
             'department'       => $doctor->specialization,
@@ -226,6 +210,13 @@ class BookingController extends Controller
         return redirect()
             ->route('patient.dashboard')
             ->with('success', 'Appointment booked successfully!');
+    }
+
+    private function hasActiveAppointment(User $user): bool
+    {
+        return Appointment::where('user_id', $user->id)
+            ->whereIn('status', ['pending', 'booked', 'confirmed', 'checked-in', 'called', 'in_progress', 'in-progress', 'in-session'])
+            ->exists();
     }
 
     /* ===============================

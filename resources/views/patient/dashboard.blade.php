@@ -132,48 +132,9 @@
         <main class="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8">
             <div class="max-w-[1200px] mx-auto space-y-6">
 
-                {{-- SUSPENSION WARNING --}}
-                @if(auth()->user()->is_locked_from_booking)
-                    <div class="bg-rose-50 border border-rose-100 rounded-2xl p-5 md:p-6 space-y-4 font-karma">
-                        <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm">
-                                <i class="fa-solid fa-user-slash"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-rose-800 text-base">Booking Account Suspended</h4>
-                                <p class="text-xs text-rose-700/80 font-medium leading-relaxed mt-0.5">
-                                    Your access to online scheduling has been temporarily locked because you accumulated 3 or more unattended cancellations or no-show markers.
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <hr class="border-rose-100/70">
-
-                        <div class="bg-white/80 border border-rose-200/60 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-semibold text-rose-900">
-                            <div class="flex items-center gap-2.5">
-                                <i class="fa-solid fa-robot text-base text-rose-600"></i>
-                                <span>Your account will be <strong>automatically unblocked</strong> by the system once the lockout period expires. No manual appeal is required.</span>
-                            </div>
-
-                            @if(auth()->user()->unblocked_at)
-                                <div class="shrink-0 bg-rose-100/70 text-rose-800 px-3 py-1.5 rounded-lg border border-rose-200 text-center text-[11px]">
-                                    <i class="fa-regular fa-clock mr-1"></i>
-                                    {{ \Carbon\Carbon::parse(auth()->user()->unblocked_at)->format('M d, Y h:i A') }}
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                @endif
-
                 {{-- MOBILE QUICK BOOKING BUTTON --}}
                 <div class= "block lg:hidden font-karma">
-                    @if(auth()->user()->is_locked_from_booking)
-                        <div class="bg-white border border-slate-200/80 rounded-xl py-3.5 px-4 text-center select-none shadow-sm">
-                            <p class="text-[11px] font-bold text-rose-500 uppercase tracking-wide flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-ban"></i> Booking Disabled due to Suspension
-                            </p>
-                        </div>
-                    @elseif(isset($hasActiveAppointment) && $hasActiveAppointment)
+                    @if(isset($hasActiveAppointment) && $hasActiveAppointment)
                         <div class="bg-white border border-slate-200/80 rounded-xl py-3.5 px-4 text-center select-none shadow-sm">
                             <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wide flex items-center justify-center gap-1.5">
                                 <i class="fa-solid fa-lock text-slate-400"></i> Booking Locked
@@ -383,16 +344,7 @@
     {{-- ================= RIGHT UTILITY SIDEBAR ================= --}}
     <aside class="w-80 hidden lg:flex flex-col p-6 gap-6 border-l border-slate-200/50 bg-white shrink-0 h-full overflow-y-auto font-karma">
         
-        @if(auth()->user()->is_locked_from_booking)
-            <div class="bg-rose-50 border border-rose-100 rounded-xl p-5 text-center select-none shrink-0">
-                <div class="flex items-center justify-center gap-2 text-rose-600 font-bold text-xs uppercase tracking-wider">
-                    <i class="fa-solid fa-ban"></i> Booking Suspended
-                </div>
-                <p class="mt-2 text-xs text-rose-700/85 leading-relaxed font-medium">
-                    Your scheduling rights have been restricted. Use the appeal form on your main dashboard to request reactivation.
-                </p>
-            </div>
-        @elseif(isset($hasActiveAppointment) && $hasActiveAppointment)
+        @if(isset($hasActiveAppointment) && $hasActiveAppointment)
             <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-5 text-center select-none shrink-0">
                 <div class="flex items-center justify-center gap-2 text-slate-500 font-bold text-xs uppercase tracking-wider">
                     <i class="fa-solid fa-lock text-slate-400"></i> Booking Locked

@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasTable('prescription_items')) {
+            return;
+        }
+
         Schema::table('prescription_items', function (Blueprint $table) {
             // Ensure each prescription_item belongs to a valid prescription
             $table->foreign('prescription_id')

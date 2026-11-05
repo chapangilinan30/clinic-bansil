@@ -217,15 +217,9 @@
                                                 <td colspan="5" class="text-center py-20 text-slate-400">
                                                     <i class="fa-regular fa-calendar-xmark text-slate-300 text-4xl mb-3 block"></i>
                                                     <p class="text-sm font-medium">Wala kang upcoming appointments.</p>
-                                                    @if(auth()->user()->is_locked_from_booking)
-                                                        <a href="{{ route('patient.dashboard') }}" class="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-[#1F6F8B] underline underline-offset-2">
-                                                            Tingnan ang booking status
-                                                        </a>
-                                                    @else
-                                                        <a href="{{ route('patient.booking.step1') }}" class="mt-2 inline-flex items-center gap-2 rounded-lg bg-[#1F6F8B] px-4 py-2.5 text-xs font-bold uppercase text-white transition hover:bg-[#18576d]">
-                                                            <i class="fa-solid fa-calendar-plus"></i> Mag-book ng appointment
-                                                        </a>
-                                                    @endif
+                                                    <a href="{{ route('patient.booking.step1') }}" class="mt-2 inline-flex items-center gap-2 rounded-lg bg-[#1F6F8B] px-4 py-2.5 text-xs font-bold uppercase text-white transition hover:bg-[#18576d]">
+                                                        <i class="fa-solid fa-calendar-plus"></i> Mag-book ng appointment
+                                                    </a>
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -267,13 +261,9 @@
                             <div class="rounded-xl border border-slate-200 bg-white px-5 py-10 text-center shadow-sm">
                                 <i class="fa-regular fa-calendar-xmark text-3xl text-slate-300" aria-hidden="true"></i>
                                 <p class="mt-3 text-sm font-semibold text-slate-700">Wala kang upcoming appointments.</p>
-                                @if(auth()->user()->is_locked_from_booking)
-                                    <a href="{{ route('patient.dashboard') }}" class="mt-3 inline-flex text-sm font-semibold text-[#1F6F8B] underline underline-offset-2">Tingnan ang booking status</a>
-                                @else
-                                    <a href="{{ route('patient.booking.step1') }}" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#1F6F8B] px-4 py-2.5 text-xs font-bold uppercase text-white transition hover:bg-[#18576d]">
-                                        <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i> Mag-book ng appointment
-                                    </a>
-                                @endif
+                                <a href="{{ route('patient.booking.step1') }}" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#1F6F8B] px-4 py-2.5 text-xs font-bold uppercase text-white transition hover:bg-[#18576d]">
+                                    <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i> Mag-book ng appointment
+                                </a>
                             </div>
                         @endforelse
                     </div>
@@ -310,7 +300,7 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold brand-subtext-gray uppercase mb-0.5">Cancellation Policy</label>
-                        <p class="text-xs text-rose-700 font-semibold leading-relaxed">Ang cancellation o no-show ay maaaring magdagdag ng strike. Kapag umabot sa 3, masususpinde ang online booking.</p>
+                        <p class="text-xs text-slate-600 font-semibold leading-relaxed">Kapag may active appointment ka, hindi ka makakapag-book ng panibago hangga't hindi ito natatapos o nakansela.</p>
                     </div>
                 </div>
                 

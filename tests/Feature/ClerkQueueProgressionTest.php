@@ -119,7 +119,7 @@ it('sends a readable notification when an overdue appointment becomes a no-show'
     Notification::assertSentTo(
         $patient,
         AppointmentStatusNotification::class,
-        fn ($notification) => $notification->message === 'Your appointment has been marked as No-Show due to missed check-in time.'
+        fn ($notification) => $notification->toDatabase($patient)['message'] === 'Your appointment has been marked as No-Show due to missed check-in time.'
     );
 });
 
@@ -152,6 +152,6 @@ it('notifies the patient when the scheduled command marks an appointment as a no
     Notification::assertSentTo(
         $patient,
         AppointmentStatusNotification::class,
-        fn ($notification) => str_contains($notification->message, 'marked as no-show')
+        fn ($notification) => str_contains($notification->toDatabase($patient)['message'], 'marked as no-show')
     );
 });

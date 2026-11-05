@@ -11,7 +11,9 @@ return new class extends Migration
      */
 public function up(): void
 {
-    if (!Schema::hasTable('prescription_items')) {
+    if (!Schema::hasTable('prescription_items')
+        && Schema::hasTable('prescriptions')
+        && Schema::hasTable('medicines')) {
 
         Schema::create('prescription_items', function (Blueprint $table) {
             $table->id();

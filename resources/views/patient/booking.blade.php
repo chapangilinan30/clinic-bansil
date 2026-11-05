@@ -142,86 +142,8 @@
                     </div>
                 @endif
 
-                @if(auth()->user()->is_locked_from_booking)
-                    {{-- LOCKOUT APPEAL INTERFACE AREA --}}
-                    <div class="bg-white rounded-2xl shadow-sm border border-rose-100 overflow-hidden">
-                        <div class="bg-rose-50 p-6 border-b border-rose-100 flex items-center space-x-4">
-                            <div class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm">
-                                <i class="fa-solid fa-user-slash"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-rose-800">Booking Access Suspended</h3>
-                                <p class="text-xs text-rose-700/80 font-medium mt-0.5">This account has accumulated 3 or more cancellation/no-show infractions.</p>
-                            </div>
-                        </div>
-
-                        <div class="p-6">
-                            {{-- Status State Check Handler --}}
-                            @if(auth()->user()->reactivation_status === 'none' || !auth()->user()->reactivation_status)
-                                <p class="text-slate-600 text-xs font-medium mb-6 leading-relaxed">
-                                    To request the restoration of your appointment booking permissions, please provide a comprehensive explanation or official justification below regarding your missed or late-cancelled slots.
-                                </p>
-
-                                <form action="{{ route('patient.reactivate.submit') }}" method="POST" class="space-y-4">
-                                    @csrf
-                                    <div>
-                                        <label for="reactivation_reason" class="block mb-2 font-bold text-slate-700 text-xs uppercase tracking-wider">
-                                            Statement of Reason / Appeal Context
-                                        </label>
-                                        <textarea 
-                                            name="reactivation_reason" 
-                                            id="reactivation_reason" 
-                                            rows="5" 
-                                            class="w-full text-slate-700 text-xs font-medium border border-slate-200 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-[#1F6F8B]/20 focus:border-[#1F6F8B] transition shadow-sm resize-none @error('reactivation_reason') border-rose-500 @enderror" 
-                                            placeholder="Explain why you missed your sessions and how you intend to fulfill future appointments..."
-                                            required
-                                        >{{ old('reactivation_reason') }}</textarea>
-                                        
-                                        @error('reactivation_reason')
-                                            <p class="text-rose-500 text-xs mt-1.5 font-semibold">{{ $message }}</p>
-                                        @enderror
-                                    </div>
-
-                                    <div class="flex justify-end">
-                                        <button type="submit" class="flex items-center gap-2 bg-[#1F6F8B] hover:bg-[#18576d] text-white py-3 px-6 rounded-xl shadow-md font-bold text-xs uppercase tracking-wider transition active:scale-[0.98]">
-                                            <i class="fa-solid fa-paper-plane"></i>
-                                            Submit Reactivation Appeal
-                                        </button>
-                                    </div>
-                                </form>
-
-                            @elseif(auth()->user()->reactivation_status === 'pending')
-                                {{-- Pending Review Frame Box Block --}}
-                                <div class="bg-amber-50 border border-amber-100 rounded-xl p-5 flex items-start space-x-3 text-xs">
-                                    <i class="fa-solid fa-circle-notch animate-spin text-amber-500 text-base mt-0.5 shrink-0"></i>
-                                    <div>
-                                        <h4 class="font-bold text-amber-900 text-sm mb-1">Appeal Under Evaluation</h4>
-                                        <p class="text-amber-800 leading-relaxed font-medium">
-                                            Your justification statement has been successfully logged into our server queue. A clinic receptionist or administrative clerk will inspect your file records shortly. Thank you for your patience.
-                                        </p>
-                                        <div class="mt-4 bg-white/80 border border-amber-200/60 p-3.5 rounded-lg text-slate-700 italic shadow-inner">
-                                            <strong>Your Statement:</strong> "{{ auth()->user()->reactivation_reason }}"
-                                        </div>
-                                    </div>
-                                </div>
-
-                            @elseif(auth()->user()->reactivation_status === 'denied')
-                                {{-- Rejected Panel Warning Area --}}
-                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 flex items-start space-x-3 text-xs">
-                                    <i class="fa-solid fa-circle-xmark text-rose-500 text-base mt-0.5 shrink-0"></i>
-                                    <div>
-                                        <h4 class="font-bold text-slate-900 text-sm mb-1">Appeal Request Denied</h4>
-                                        <p class="text-slate-600 leading-relaxed font-medium">
-                                            Administrative managers have reviewed your booking history logs and formally declined this particular reactivation request. Please contact the front desk support directly or check in over the phone to clear manually outstanding discrepancies.
-                                        </p>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                @else
-                    {{-- Booking Form --}}
-                    <form method="POST" action="{{ route('patient.book-appointment') }}" class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-5">
+                {{-- Booking Form --}}
+                <form method="POST" action="{{ route('patient.booking.store') }}" class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-5">
                         @csrf
 
                         {{-- Department --}}
@@ -264,8 +186,7 @@
                                 Book Appointment
                             </button>
                         </div>
-                    </form>
-                @endif
+                </form>
             </div>
         </main>
     </div>

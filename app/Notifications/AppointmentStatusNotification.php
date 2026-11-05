@@ -15,8 +15,8 @@ class AppointmentStatusNotification extends Notification
 
     public function __construct($appointment, $message = null)
     {
-        $this->appointment = $appointment;
-        $this->message = $message;
+        $this->appointment = is_string($appointment) ? null : $appointment;
+        $this->message = $message ?? (is_string($appointment) ? $appointment : null);
     }
 
     public function via($notifiable): array

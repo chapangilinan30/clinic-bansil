@@ -7,7 +7,11 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up(): void
-{
+    {
+        if (!Schema::hasTable('prescriptions')) {
+            return;
+        }
+
             Schema::table('prescriptions', function (Blueprint $table) {
 
                 // Check if column exists before dropping
@@ -19,7 +23,7 @@ return new class extends Migration
                         'duration',
                         'instructions',
                     ]);
-                }
+    }
 
             });
         }

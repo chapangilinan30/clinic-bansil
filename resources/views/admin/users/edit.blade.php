@@ -30,7 +30,7 @@
         </div>
 
         <!-- Edit Form -->
-        <form action="{{ route('users.update', $user->id) }}" method="POST" class="p-6 space-y-5">
+        <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="p-6 space-y-5">
             @csrf
             @method('PUT')
 

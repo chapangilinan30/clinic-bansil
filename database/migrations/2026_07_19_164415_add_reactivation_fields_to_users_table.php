@@ -12,11 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Adds a text block column for the patient's explanation
-            $table->text('reactivation_reason')->nullable()->after('is_locked_from_booking');
-            
-            // Adds a string column to track state ('pending', 'rejected', or null)
-            $table->string('reactivation_status')->nullable()->after('reactivation_reason');
+            if (!Schema::hasColumn('users', 'reactivation_reason')) {
+                $table->text('reactivation_reason')->nullable()->after('is_locked_from_booking');
+            }
+
+            if (!Schema::hasColumn('users', 'reactivation_status')) {
+                $table->string('reactivation_status')->nullable()->after('reactivation_reason');
+            }
         });
     }
 

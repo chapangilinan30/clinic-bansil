@@ -11,7 +11,7 @@ class DoctorDashboardController extends Controller
     public function index()
     {
         $doctorId = auth()->id();
-        $today = now()->toDateString();
+        $today = Carbon::today('Asia/Manila')->toDateString();
 
         // Total appointments scheduled for today
         $totalAppointmentsToday = Appointment::where('doctor_id', $doctorId)
@@ -35,7 +35,7 @@ class DoctorDashboardController extends Controller
             ->count();
 
         // Appointments table for today
-       $today = now()->format('Y-m-d');
+       $today = Carbon::today('Asia/Manila')->toDateString();
 
        $todaysAppointments = Appointment::where('doctor_id', $doctorId)
             ->whereDate('appointment_date', $today)
