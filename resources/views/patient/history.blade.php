@@ -26,7 +26,7 @@
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-[#f4f7fc] text-slate-700 h-screen flex flex-col overflow-hidden font-sans" x-data="{ sidebarOpen: false }">
+<body class="bg-[#f4f7fc] text-slate-700 h-screen h-[100dvh] flex flex-col overflow-hidden font-sans" x-data="{ sidebarOpen: false }">
 
 @php
     $userName = auth()->user()->name ?? 'Guest User';
@@ -49,7 +49,7 @@
         medicines: [],
         nextAppointmentDate: ''
     } 
-}" class="flex-1 flex overflow-hidden relative">
+}" class="flex-1 min-h-0 min-w-0 flex overflow-hidden relative">
 
     {{-- ================= COLLAPSIBLE MOBILE SIDEBAR BACKDROP ================= --}}
     <div x-show="sidebarOpen" 
@@ -128,7 +128,7 @@
     </aside>
 
     {{-- ================= MAIN CONTENT AREA ================= --}}
-    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto pb-20 md:pb-0">
+    <div class="flex-1 min-h-0 min-w-0 flex flex-col overflow-y-auto pb-20 md:pb-0">
 
         {{-- Desktop Header Bar --}}
         <header class="hidden md:flex bg-white px-8 py-5 justify-between items-center shrink-0 border-b border-slate-200/40 shadow-sm font-karma">
@@ -155,7 +155,7 @@
             
         </div>
 
-        <main class="flex-1 p-4 md:p-8 space-y-6 max-w-6xl w-full mx-auto">
+        <main class="flex-1 min-w-0 p-4 sm:p-6 md:p-8 space-y-6 max-w-6xl w-full mx-auto">
 
             {{-- Visit History List Container structured to match the reference card aesthetic --}}
             <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
@@ -261,16 +261,7 @@
                     </table>
                 </div>
 
-                {{-- 2. Mobile Card / Table Layout matching the reference image structure --}}
-                <div class="block md:hidden">
-                    {{-- Column header row mimicking reference appts page headers --}}
-                    <div class="grid grid-cols-5 px-6 py-4 border-b border-slate-100 text-[10px] font-bold uppercase tracking-widest text-[#7794a3] text-center">
-                        <span class="text-left">Date</span>
-                        <span class="text-left">Time</span>
-                        <span class="text-left col-span-2">Doctor</span>
-                        <span class="text-right">Action</span>
-                    </div>
-
+                <div class="space-y-3 p-3 md:hidden">
                     @forelse($history as $visit)
                         @php
                             $payload = [
@@ -296,26 +287,42 @@
                                     ? \Carbon\Carbon::parse($visit->prescription->next_appointment_date)->format('F d, Y') 
                                     : ''
                             ];
+                            $visitStatus = strtolower($visit->status);
+                            $visitStatusClass = match($visitStatus) {
+                                'completed' => 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                                'cancelled' => 'border-rose-200 bg-rose-50 text-rose-700',
+                                default => 'border-slate-200 bg-slate-100 text-slate-700',
+                            };
                         @endphp
-                        <div class="grid grid-cols-5 px-6 py-4 items-center border-b border-slate-100 text-xs hover:bg-slate-50/50 transition-colors">
-                            <span class="text-slate-700 font-semibold text-left">
-                                {{ \Carbon\Carbon::parse($visit->appointment_date)->format('M d') }}
-                            </span>
-                            <span class="text-slate-500 text-left">
-                                {{ $visit->appointment_time ? \Carbon\Carbon::parse($visit->appointment_time)->format('h:i A') : 'N/A' }}
-                            </span>
-                            <span class="text-[#003366] font-bold text-left col-span-2 truncate pr-2">
-                                 {{ $visit->doctor->name ?? 'N/A' }}
-                            </span>
-                            <div class="text-right">
+                        <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-slate-500">
+                                        {{ \Carbon\Carbon::parse($visit->appointment_date)->format('D, M d, Y') }}
+                                        @if($visit->appointment_time)
+                                            <span class="mx-1 text-slate-300">·</span>
+                                            {{ \Carbon\Carbon::parse($visit->appointment_time)->format('h:i A') }}
+                                        @endif
+                                    </p>
+                                    <h3 class="mt-1 truncate text-sm font-bold text-[#003366]">{{ $visit->doctor->name ?? 'N/A' }}</h3>
+                                </div>
+                                <span class="shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase {{ $visitStatusClass }}">
+                                    {{ ucfirst($visitStatus) }}
+                                </span>
+                            </div>
+                            <p class="mt-3 line-clamp-2 text-xs leading-relaxed text-slate-600">
+                                {{ $visit->reason ?: ($visit->notes ?: ($visit->purpose ?? 'No visit reason recorded.')) }}
+                            </p>
+                            <div class="mt-4 border-t border-slate-100 pt-3">
                                 <button
                                     type="button"
                                     @click='selectedVisit = @json($payload); openModal = true'
-                                    class="px-3 py-1.5 bg-[#1F6F8B] text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition shadow-sm active:scale-[0.98]">
+                                    class="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#1F6F8B] px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition hover:bg-[#18576d] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1F6F8B] focus-visible:ring-offset-2 active:scale-[0.98]">
+                                    <i class="fa-regular fa-eye" aria-hidden="true"></i>
                                     View
                                 </button>
                             </div>
-                        </div>
+                        </article>
                     @empty
                         {{-- Empty state precisely matching reference image --}}
                         <div class="text-center py-24 px-6">

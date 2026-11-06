@@ -27,7 +27,7 @@
     </style>
 </head>
 
-<body class="bg-[#f4f7fc] text-slate-700 h-screen flex flex-col overflow-hidden font-sans" x-data="{ sidebarOpen: false }">
+<body class="bg-[#f4f7fc] text-slate-700 h-screen h-[100dvh] flex flex-col overflow-hidden font-sans" x-data="{ sidebarOpen: false }">
 
 @php
     $userName = auth()->user()->name ?? 'Guest User';
@@ -40,7 +40,7 @@
     }
 @endphp
 
-<div class="flex-1 flex overflow-hidden relative">
+<div class="flex-1 min-h-0 min-w-0 flex overflow-hidden relative">
 
     {{-- ================= COLLAPSIBLE MOBILE SIDEBAR BACKDROP ================= --}}
     <div x-show="sidebarOpen" 
@@ -116,7 +116,7 @@
     </aside>
 
     {{-- ================= CENTER MAIN LAYOUT ================= --}}
-    <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden">
         
         {{-- Header Bar --}}
         <header class="bg-white px-6 md:px-8 py-5 flex justify-between items-center shrink-0 border-b border-slate-200/40 shadow-sm font-karma">
@@ -129,7 +129,7 @@
         </header>
 
         {{-- Scrollable Main Content Zone --}}
-        <main class="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8">
+        <main class="flex-1 min-h-0 min-w-0 p-4 sm:p-6 md:p-8 overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-8">
             <div class="max-w-[1200px] mx-auto space-y-6">
 
                 {{-- MOBILE QUICK BOOKING BUTTON --}}
@@ -425,7 +425,7 @@
     </aside>
 
     {{-- ================= MOBILE BOTTOM NAVIGATION BAR ================= --}}
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 px-6 py-2.5 flex justify-around items-center z-40 shadow-lg font-karma">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 px-3 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] flex justify-around items-center z-40 shadow-lg font-karma">
         <a href="{{ route('patient.dashboard') }}" aria-current="page" class="flex flex-col items-center gap-0.5 text-[#1F6F8B]">
             <i class="fa-solid fa-chart-pie text-lg"></i>
             <span class="text-[9px] font-bold uppercase tracking-wider">Home</span>

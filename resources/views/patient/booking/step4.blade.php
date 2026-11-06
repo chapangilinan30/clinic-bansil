@@ -26,7 +26,7 @@
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-[#f4f7fc] text-slate-700 h-screen flex flex-col overflow-hidden font-sans" x-data="{ sidebarOpen: false }" x-cloak>
+<body class="bg-[#f4f7fc] text-slate-700 h-screen h-[100dvh] flex flex-col overflow-hidden font-sans" x-data="{ sidebarOpen: false }" x-cloak>
 
 @php
     $userName = auth()->user()->name ?? 'Guest User';
@@ -36,7 +36,7 @@
         : strtoupper(substr($userName, 0, 2));
 @endphp
 
-<div class="flex-1 flex overflow-hidden relative">
+<div class="flex-1 min-h-0 min-w-0 flex overflow-hidden relative">
 
     {{-- ================= COLLAPSIBLE MOBILE SIDEBAR BACKDROP ================= --}}
     <div x-show="sidebarOpen" 
@@ -113,7 +113,7 @@
     </aside>
 
     {{-- ================= MAIN CONTENT AREA ================= --}}
-    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto pb-20 md:pb-0">
+    <div class="flex-1 min-h-0 min-w-0 flex flex-col overflow-y-auto pb-20 md:pb-0">
 
         {{-- Desktop Header Bar --}}
         <header class="bg-white px-6 md:px-8 py-5 flex justify-between items-center shrink-0 border-b border-slate-200/40 shadow-sm font-karma">
@@ -135,7 +135,7 @@
         </header>
         
 
-        <main class="flex-1 p-4 md:p-8 space-y-6 max-w-6xl w-full mx-auto">
+        <main class="flex-1 min-w-0 p-4 sm:p-6 md:p-8 space-y-6 max-w-6xl w-full mx-auto">
 
             {{-- Title Banner --}}
             <div class="bg-[#CBDCEB] p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
