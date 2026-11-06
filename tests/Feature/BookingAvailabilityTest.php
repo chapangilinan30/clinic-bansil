@@ -46,7 +46,10 @@ it('allows booking when an account has a legacy strike lock', function () {
 
 it('still blocks booking while a consultation appointment is active', function () {
     $patient = User::factory()->create(['role' => 'patient']);
-    $doctor = User::factory()->create(['role' => 'doctor']);
+    $doctor = User::factory()->create([
+        'role' => 'doctor',
+        'specialization' => 'General',
+    ]);
 
     Appointment::create([
         'user_id' => $patient->id,
@@ -79,4 +82,40 @@ it('still blocks booking while a consultation appointment is active', function (
         ->assertSessionHas('error', 'You already have an active appointment. Please wait until it is completed before booking again.');
 
     expect(Appointment::where('user_id', $patient->id)->count())->toBe(1);
+});
+
+it('can create the appointment from confirmation fields if the booking session is missing', function () {
+    $patient = User::factory()->create(['role' => 'patient']);
+    $doctor = User::factory()->create([
+        'role' => 'doctor',
+        'specialization' => 'General',
+    ]);
+
+    Patient::create([
+        'user_id' => $patient->id,
+        'doctor_id' => $doctor->id,
+        'first_name' => $patient->name,
+        'last_name' => $patient->surname,
+        'birth_date' => $patient->birthdate->toDateString(),
+        'gender' => $patient->sex,
+        'contact_number' => $patient->contact,
+        'address' => $patient->address,
+    ]);
+
+    $this->actingAs($patient)
+        ->post(route('patient.booking.store'), [
+            'doctor_id' => $doctor->id,
+            'department' => 'General',
+            'selected_date' => now()->addDay()->toDateString(),
+            'selected_time' => '10:00',
+            'patient_name' => $patient->name,
+            'patient_email' => $patient->email,
+            'patient_phone' => $patient->contact,
+            'notes' => 'Confirmation session fallback',
+        ])
+        ->assertRedirect(route('patient.dashboard'))
+        ->assertSessionHas('success', 'Appointment booked successfully!');
+
+    expect(Appointment::where('user_id', $patient->id)->first()->notes)
+        ->toBe('Confirmation session fallback');
 });

@@ -76,7 +76,7 @@
                 <p class="text-[11px] text-blue-100 uppercase tracking-widest mt-1 opacity-90">
                     Patient Account
                 </p>
-                <a href="#" class="inline-block mt-2 text-xs text-blue-200 hover:text-white font-semibold underline">
+                <a href="{{ route('profile.edit') }}" class="inline-block mt-2 text-xs text-blue-200 hover:text-white font-semibold underline">
                     Edit Profile
                 </a>
             </div>
@@ -147,19 +147,7 @@
             </div>
 
             <!-- PROGRESS BAR -->
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
-                <div class="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-400">
-                    <span class="text-[#1F6F8B]">1. Department</span>
-                    <span>2. Doctor</span>
-                    <span>3. Date & Time</span>
-                    <span>4. Information</span>
-                    <span>5. Confirm</span>
-                </div>
-
-                <div class="mt-3 h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div class="h-2 bg-[#1F6F8B] rounded-full transition-all duration-300" style="width: 20%"></div>
-                </div>
-            </div>
+            @include('patient.booking._progress', ['currentStep' => 1])
 
             <!-- FORM -->
             <form action="{{ route('patient.booking.step2') }}" method="GET">
@@ -241,16 +229,16 @@
                 </div>
 
                 <!-- FOOTER BUTTONS -->
-                <div class="flex justify-between items-center mt-8 pt-6 border-t border-slate-200/60">
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mt-8 pt-6 border-t border-slate-200/60">
 
                     <a href="{{ route('patient.dashboard') }}"
-                       class="px-6 py-3 border border-slate-300 text-slate-600 font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-slate-100 transition shadow-sm">
+                       class="w-full sm:w-auto px-6 py-3 text-center border border-slate-300 text-slate-600 font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-slate-100 transition shadow-sm">
                         <i class="fa-solid fa-arrow-left mr-1"></i> Back
                     </a>
 
                     <button
                         type="submit"
-                        class="px-8 py-3 bg-[#1F6F8B] hover:bg-[#18586e] text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md transition active:scale-[0.98]">
+                        class="w-full sm:w-auto px-8 py-3 bg-[#1F6F8B] hover:bg-[#18586e] text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md transition active:scale-[0.98]">
                         Continue to Doctor <i class="fa-solid fa-arrow-right ml-1"></i>
                     </button>
 

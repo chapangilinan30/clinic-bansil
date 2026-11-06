@@ -179,13 +179,21 @@
                                     $payload = [
                                         'date' => \Carbon\Carbon::parse($visit->appointment_date)->format('F d, Y'),
                                         'time' => $visit->appointment_time ? \Carbon\Carbon::parse($visit->appointment_time)->format('h:i A') : 'N/A',
-                                        'doctor' => '. ' . ($visit->doctor->name ?? 'N/A'),
-                                        'reason' => $visit->reason ?? '',
+                                        'doctor' => $visit->doctor->name ?? 'N/A',
+                                        'reason' => $visit->reason ?: ($visit->notes ?: ($visit->purpose ?? '')),
                                         'cancelReason' => $visit->cancel_reason ?? '',
                                         'status' => ucfirst(strtolower($visit->status)),
-                                        'diagnosis' => ($visit->prescription && $visit->prescription->diagnosis) ? $visit->prescription->diagnosis : 'No diagnosis recorded.',
-                                        'medicines' => ($visit->prescription && $visit->prescription->medicines) 
-                                            ? $visit->prescription->medicines->map(fn($m) => ['name' => $m->name, 'details' => $m->details])->toArray() 
+                                        'diagnosis' => $visit->prescription?->diagnosis ?: ($visit->diagnosis ?: 'No diagnosis recorded.'),
+                                        'medicines' => $visit->prescription
+                                            ? $visit->prescription->items->map(fn($item) => [
+                                                'name' => $item->medicine->name ?? 'Medicine unavailable',
+                                                'details' => collect([
+                                                    $item->dosage,
+                                                    $item->frequency,
+                                                    $item->duration,
+                                                    $item->instructions,
+                                                ])->filter()->implode(' · '),
+                                            ])->toArray()
                                             : [],
                                         'nextAppointmentDate' => ($visit->prescription && $visit->prescription->next_appointment_date) 
                                             ? \Carbon\Carbon::parse($visit->prescription->next_appointment_date)->format('F d, Y') 
@@ -200,7 +208,7 @@
                                          {{ $visit->doctor->name ?? 'N/A' }}
                                     </td>
                                     <td class="p-5 text-sm text-slate-500 max-w-xs truncate">
-                                        {{ $visit->reason }}
+                                        {{ $visit->reason ?: ($visit->notes ?: ($visit->purpose ?? '—')) }}
                                     </td>
                                     <td class="p-5 text-sm max-w-xs truncate">
                                         @if(strtolower($visit->status) === 'cancelled')
@@ -268,13 +276,21 @@
                             $payload = [
                                 'date' => \Carbon\Carbon::parse($visit->appointment_date)->format('F d, Y'),
                                 'time' => $visit->appointment_time ? \Carbon\Carbon::parse($visit->appointment_time)->format('h:i A') : 'N/A',
-                                'doctor' => ' ' . ($visit->doctor->name ?? 'N/A'),
-                                'reason' => $visit->reason ?? '',
+                                'doctor' => $visit->doctor->name ?? 'N/A',
+                                'reason' => $visit->reason ?: ($visit->notes ?: ($visit->purpose ?? '')),
                                 'cancelReason' => $visit->cancel_reason ?? '',
                                 'status' => ucfirst(strtolower($visit->status)),
-                                'diagnosis' => ($visit->prescription && $visit->prescription->diagnosis) ? $visit->prescription->diagnosis : 'No diagnosis recorded.',
-                                'medicines' => ($visit->prescription && $visit->prescription->medicines) 
-                                    ? $visit->prescription->medicines->map(fn($m) => ['name' => $m->name, 'details' => $m->details])->toArray() 
+                                'diagnosis' => $visit->prescription?->diagnosis ?: ($visit->diagnosis ?: 'No diagnosis recorded.'),
+                                'medicines' => $visit->prescription
+                                    ? $visit->prescription->items->map(fn($item) => [
+                                        'name' => $item->medicine->name ?? 'Medicine unavailable',
+                                        'details' => collect([
+                                            $item->dosage,
+                                            $item->frequency,
+                                            $item->duration,
+                                            $item->instructions,
+                                        ])->filter()->implode(' · '),
+                                    ])->toArray()
                                     : [],
                                 'nextAppointmentDate' => ($visit->prescription && $visit->prescription->next_appointment_date) 
                                     ? \Carbon\Carbon::parse($visit->prescription->next_appointment_date)->format('F d, Y') 

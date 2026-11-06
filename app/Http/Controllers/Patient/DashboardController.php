@@ -137,7 +137,7 @@ class DashboardController extends Controller
     {
         $appointments = Appointment::with('doctor')
             ->where('user_id', auth()->id())
-            ->whereIn('status', ['pending', 'checked-in', 'called', 'in_progress'])
+            ->whereIn('status', ['pending', 'booked', 'confirmed', 'checked-in', 'called', 'in_progress', 'in-progress', 'in-session'])
             ->orderBy('appointment_date', 'asc')
             ->orderBy('appointment_time', 'asc')
             ->get();

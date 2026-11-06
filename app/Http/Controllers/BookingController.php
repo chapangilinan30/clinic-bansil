@@ -236,7 +236,7 @@ class BookingController extends Controller
     =============================== */
     public function getDates($doctorId)
     {
-        $today = Carbon::today();
+        $today = Carbon::today('Asia/Manila');
         $dates = [];
 
         for ($i = 0; $i < 30; $i++) {

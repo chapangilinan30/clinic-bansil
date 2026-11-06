@@ -85,7 +85,7 @@
             </div>
 
             <nav class="space-y-1.5 text-sm font-medium font-karma">
-                <a href="#" 
+                <a href="{{ route('patient.dashboard') }}"
                    class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 bg-white brand-text-teal shadow-md font-semibold">
                     <i class="fa-solid fa-chart-pie text-base"></i>
                     <span>Dashboard</span>

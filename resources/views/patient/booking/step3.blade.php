@@ -80,7 +80,7 @@
                 <p class="text-[11px] text-blue-100 uppercase tracking-widest mt-1 opacity-90">
                     Patient Account
                 </p>
-                <a href="#" class="inline-block mt-2 text-xs text-blue-200 hover:text-white font-semibold underline">
+                <a href="{{ route('profile.edit') }}" class="inline-block mt-2 text-xs text-blue-200 hover:text-white font-semibold underline">
                     Edit Profile
                 </a>
             </div>
@@ -152,19 +152,7 @@
             </div>
 
             <!-- PROGRESS BAR -->
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
-                <div class="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-400">
-                    <span class="text-[#1F6F8B]">1. Department</span>
-                    <span class="text-[#1F6F8B]">2. Doctor</span>
-                    <span class="text-[#1F6F8B]">3. Date & Time</span>
-                    <span>4. Information</span>
-                    <span>5. Confirm</span>
-                </div>
-
-                <div class="mt-3 h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div class="h-2 bg-[#1F6F8B] rounded-full transition-all duration-300" style="width: 60%"></div>
-                </div>
-            </div>
+            @include('patient.booking._progress', ['currentStep' => 3])
 
             <!-- FORM -->
             <form action="{{ route('patient.booking.step4') }}" method="GET">
@@ -209,6 +197,7 @@
                                     placeholder="Select available date"
                                     class="w-full px-4 py-3 border border-slate-300 rounded-xl text-xs font-medium text-slate-700 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1F6F8B] focus:border-transparent transition-all cursor-pointer"
                                 >
+                                <p id="date-feedback" role="status" aria-live="polite" class="mt-2 text-xs text-slate-500"></p>
                             </div>
 
                             <div>
@@ -230,10 +219,10 @@
                 <input type="hidden" name="time" id="selected_time">
 
                 <!-- FOOTER BUTTONS -->
-                <div class="flex justify-between items-center mt-8 pt-6 border-t border-slate-200/60">
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mt-8 pt-6 border-t border-slate-200/60">
 
                     <a href="{{ route('patient.booking.step2') }}"
-                       class="px-6 py-3 border border-slate-300 text-slate-600 font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-slate-100 transition shadow-sm flex items-center gap-2">
+                       class="w-full sm:w-auto justify-center px-6 py-3 border border-slate-300 text-slate-600 font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-slate-100 transition shadow-sm flex items-center gap-2">
                         <i class="fa-solid fa-arrow-left"></i> Back
                     </a>
 
@@ -241,7 +230,7 @@
                         type="submit"
                         id="submitBtn"
                         disabled
-                        class="px-8 py-3 bg-[#1F6F8B] hover:bg-[#18586e] text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md transition active:scale-[0.98] flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                        class="w-full sm:w-auto justify-center px-8 py-3 bg-[#1F6F8B] hover:bg-[#18586e] text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md transition active:scale-[0.98] flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
                         Continue to Patient Info <i class="fa-solid fa-arrow-right"></i>
                     </button>
 
@@ -259,6 +248,7 @@
     const timeslots = document.getElementById('timeslots');
     const submitBtn = document.getElementById('submitBtn');
     const selectedTime = document.getElementById('selected_time');
+    const dateFeedback = document.getElementById('date-feedback');
 
     // Helper function to turn "14:20" into "02:20 PM"
     function convertTo12Hour(timeString) {
@@ -272,21 +262,46 @@
         return `${formattedHours}:${minutes} ${ampm}`;
     }
 
-    fetch(`/patient/get-dates/${doctorId}`)
-        .then(res => res.json())
-        .then(dates => {
+    async function loadAvailableDates() {
+        try {
+            if (typeof flatpickr !== 'function') {
+                throw new Error('Calendar library did not load.');
+            }
+
+            const response = await fetch(`/patient/get-dates/${doctorId}`);
+            if (!response.ok) {
+                throw new Error(`Date request failed with status ${response.status}.`);
+            }
+
+            const dates = await response.json();
+            if (!Array.isArray(dates)) {
+                throw new Error('Date response was not a list.');
+            }
+
+            if (dates.length === 0) {
+                dateFeedback.textContent = 'There are no available appointment dates for this doctor yet.';
+            }
+
             flatpickr("#appointment_date", {
                 dateFormat: "Y-m-d",
                 minDate: "today",
                 enable: dates,
                 disableMobile: true,
                 onChange: function(_, dateStr) {
+                    dateFeedback.textContent = '';
                     loadTimes(dateStr);
                 }
             });
-        });
+        } catch (error) {
+            console.error('Appointment dates failed to load:', error);
+            dateFeedback.textContent = 'Could not load available dates. Please refresh the page and try again.';
+            dateFeedback.classList.add('text-rose-700');
+        }
+    }
 
-    function loadTimes(date) {
+    loadAvailableDates();
+
+    async function loadTimes(date) {
         submitBtn.disabled = true;
         selectedTime.value = '';
 
@@ -296,55 +311,65 @@
             </div>
         `;
 
-        fetch(`/patient/get-times/${doctorId}/${date}`)
-            .then(res => res.json())
-            .then(times => {
-                timeslots.innerHTML = '';
+        try {
+            const response = await fetch(`/patient/get-times/${doctorId}/${date}`);
+            if (!response.ok) {
+                throw new Error(`Time request failed with status ${response.status}.`);
+            }
 
-                if (!times.length) {
-                    timeslots.innerHTML = `
-                        <div class="col-span-full text-red-500 text-xs font-semibold p-4 border border-red-200 bg-red-50 rounded-xl text-center">
-                            No available time slots for this date
-                        </div>
-                    `;
-                    return;
-                }
+            const times = await response.json();
+            if (!Array.isArray(times)) {
+                throw new Error('Time response was not a list.');
+            }
 
-                times.forEach(time => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.innerText = convertTo12Hour(time); 
-                    
-                    btn.className = `
-                        py-3 px-2 rounded-xl border border-slate-200 bg-white
-                        text-slate-700 font-semibold text-xs transition-all shadow-sm
-                        hover:bg-[#CBDCEB]/30 hover:border-[#1F6F8B] hover:text-[#003366]
-                        focus:outline-none
-                    `;
+            timeslots.innerHTML = '';
 
-                    btn.onclick = () => {
-                        selectedTime.value = time;
-                        submitBtn.disabled = false;
+            if (times.length === 0) {
+                timeslots.innerHTML = `
+                    <div class="col-span-full rounded-xl border border-amber-200 bg-amber-50 p-4 text-center text-xs font-semibold text-amber-800" role="status">
+                        No available time slots for this date. Please choose another date.
+                    </div>
+                `;
+                return;
+            }
 
-                        document.querySelectorAll('#timeslots button').forEach(b => {
-                            b.className = `
-                                py-3 px-2 rounded-xl border border-slate-200 bg-white
-                                text-slate-700 font-semibold text-xs transition-all shadow-sm
-                                hover:bg-[#CBDCEB]/30 hover:border-[#1F6F8B] hover:text-[#003366]
-                                focus:outline-none
-                            `;
-                        });
+            times.forEach(time => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.innerText = convertTo12Hour(time);
+                btn.setAttribute('aria-pressed', 'false');
+                btn.className = `
+                    rounded-xl border border-slate-200 bg-white px-2 py-3
+                    text-xs font-semibold text-slate-700 shadow-sm transition-all
+                    hover:border-[#1F6F8B] hover:bg-[#CBDCEB]/30 hover:text-[#003366]
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1F6F8B] focus-visible:ring-offset-2
+                `;
 
-                        btn.className = `
-                            py-3 px-2 rounded-xl border border-[#1F6F8B] bg-[#1F6F8B]
-                            text-white font-bold text-xs transition-all shadow
-                            focus:outline-none
-                        `;
-                    };
+                btn.onclick = () => {
+                    selectedTime.value = time;
+                    submitBtn.disabled = false;
 
-                    timeslots.appendChild(btn);
-                });
+                    document.querySelectorAll('#timeslots button').forEach(button => {
+                        button.setAttribute('aria-pressed', 'false');
+                        button.classList.remove('border-[#1F6F8B]', 'bg-[#1F6F8B]', 'text-white');
+                        button.classList.add('border-slate-200', 'bg-white', 'text-slate-700');
+                    });
+
+                    btn.setAttribute('aria-pressed', 'true');
+                    btn.classList.remove('border-slate-200', 'bg-white', 'text-slate-700');
+                    btn.classList.add('border-[#1F6F8B]', 'bg-[#1F6F8B]', 'text-white');
+                };
+
+                timeslots.appendChild(btn);
             });
+        } catch (error) {
+            console.error('Appointment times failed to load:', error);
+            timeslots.innerHTML = `
+                <div class="col-span-full rounded-xl border border-rose-200 bg-rose-50 p-4 text-center text-xs font-semibold text-rose-800" role="alert">
+                    Could not load available times. Please select the date again or refresh the page.
+                </div>
+            `;
+        }
     }
 </script>
 
