@@ -217,14 +217,14 @@
                     </div>
 
                     <!-- FOOTER BUTTONS -->
-                    <div class="flex flex-col-reverse sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 mt-8 pt-6 border-t border-slate-200/60">
+                    <div class="flex flex-col-reverse lg:flex-row lg:justify-between items-stretch lg:items-center gap-3 mt-8 pt-6 border-t border-slate-200/60">
                         
                         <a href="{{ route('patient.booking.step4') }}"
-                           class="w-full sm:w-auto justify-center px-6 py-3 border border-slate-300 text-slate-600 font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-slate-100 transition shadow-sm flex items-center gap-2">
+                           class="w-full lg:w-auto justify-center px-6 py-3 border border-slate-300 text-slate-600 font-bold text-xs uppercase tracking-wider rounded-xl hover:bg-slate-100 transition shadow-sm flex items-center gap-2">
                             <i class="fa-solid fa-arrow-left"></i> Back to Information
                         </a>
 
-                        <form action="{{ route('patient.booking.store') }}" method="POST" class="w-full sm:w-auto">
+                        <form action="{{ route('patient.booking.store') }}" method="POST" class="w-full lg:w-auto">
                             @csrf
                             <input type="hidden" name="doctor_id" value="{{ $selectedDoctor->id }}">
                             <input type="hidden" name="department" value="{{ $selectedDepartment }}">
@@ -236,7 +236,7 @@
                             <input type="hidden" name="notes" value="{{ $notes }}">
 
                             <button type="submit"
-                                class="w-full sm:w-auto justify-center px-8 py-3 bg-[#1F6F8B] hover:bg-[#18586e] text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md transition active:scale-[0.98] flex items-center gap-2">
+                                class="w-full lg:w-auto justify-center px-8 py-3 bg-[#1F6F8B] hover:bg-[#18586e] text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md transition active:scale-[0.98] flex items-center gap-2">
                                 Confirm Appointment <i class="fa-solid fa-circle-check"></i>
                             </button>
                         </form>
